@@ -1106,10 +1106,26 @@ function renderLocalRadar(){
   const topSido=Object.entries(bySido).sort((a,b)=>b[1]-a[1])[0];
   const dneg={}; news.forEach(i=>{if(i.sentiment==='부정')dneg[i.sido]=(dneg[i.sido]||0)+1;});
   const topNeg=Object.entries(dneg).sort((a,b)=>b[1]-a[1])[0];
+  // 주제 빈도(데이터에 topics 없으면 제목에서 client-side 추출)
+  const TOPICKW={'일자리':['일자리','취업','채용','구직','인턴','일경험','고용'],'창업':['창업','스타트업','벤처','청년몰'],
+    '주거':['주거','월세','전세','임대주택','보증금','주택','주거급여'],'교육·직업훈련':['직업훈련','역량','장학','훈련','부트캠프','아카데미'],
+    '복지·금융':['청년수당','통장','자산형성','바우처','마음건강','고립','은둔','니트','돌봄','문화패스'],
+    '참여·소통':['참여','청년위원','정책참여단','거버넌스','간담회','네트워크','동아리','청년의회'],
+    '정책·기반':['청년정책','시행계획','기본계획','조례','공모','청년센터','청년공간','청년친화']};
+  function topicsOf(it){ if(Array.isArray(it.topics)&&it.topics.length)return it.topics;
+    const t=it.title||''; return Object.keys(TOPICKW).filter(tp=>TOPICKW[tp].some(k=>t.includes(k))); }
+  const topicCnt={}, topicPos={}, topicNeg={};
+  news.forEach(i=>topicsOf(i).forEach(tp=>{topicCnt[tp]=(topicCnt[tp]||0)+1;
+    if(i.sentiment==='긍정')topicPos[tp]=(topicPos[tp]||0)+1; if(i.sentiment==='부정')topicNeg[tp]=(topicNeg[tp]||0)+1;}));
+  const topicRank=Object.entries(topicCnt).sort((a,b)=>b[1]-a[1]);
+  const hotNeg=Object.entries(topicNeg).sort((a,b)=>b[1]-a[1])[0];
+  const hotPos=Object.entries(topicPos).sort((a,b)=>b[1]-a[1])[0];
   const pts=[];
-  pts.push(`${P_LBL[lperiod]}${lsido?' '+lsido:' 전국'} 청년정책 뉴스 <b>${fmt(news.length)}건</b> 수집 — 긍정 <span class="pos">${pct('긍정')}%</span> · 부정 <span class="neg">${pct('부정')}%</span> · 중립 ${pct('중립')}%`);
-  if(topSido)pts.push(`수집 최다 지역은 <b>${topSido[0]}</b>(${topSido[1]}건)`);
-  if(topNeg&&topNeg[1]>0)pts.push(`부정 뉴스는 <b>${topNeg[0]}</b>(${topNeg[1]}건)에 집중 — 해당 시·도 청년정책 체감도 모니터링 필요`);
+  pts.push(`${P_LBL[lperiod]}${lsido?' '+lsido:' 전국'} 청년정책 뉴스 <b>${fmt(news.length)}건</b> — 긍정 <span class="pos">${pct('긍정')}%</span> · 부정 <span class="neg">${pct('부정')}%</span> · 중립 ${pct('중립')}%`);
+  if(topicRank.length)pts.push(`가장 많이 다뤄진 정책 주제: ${topicRank.slice(0,3).map(([t,c],k)=>`<b>${t}</b>(${c}건)`).join(' · ')}`);
+  if(hotPos&&hotPos[1]>0)pts.push(`긍정 화제는 <b>${hotPos[0]}</b> 분야(긍정 ${hotPos[1]}건) — 성과·확대 보도 집중`);
+  if(hotNeg&&hotNeg[1]>0)pts.push(`주의가 필요한 주제는 <b>${hotNeg[0]}</b> 분야(부정 ${hotNeg[1]}건)${topNeg&&topNeg[1]>0?` · 지역으로는 <b>${topNeg[0]}</b>(${topNeg[1]}건)`:''}`);
+  if(!lsido&&topSido)pts.push(`수집량 최다 지역은 <b>${topSido[0]}</b>(${topSido[1]}건)`);
   if(news.length===0)pts.push(`아직 수집된 뉴스가 없습니다. <b>collect_local_news.py</b>를 실행하면 시·도별 청년정책 뉴스가 누적됩니다.`);
   $('lsummaryList').innerHTML=pts.map(p=>`<li>${p}</li>`).join('');
   $('lradarSrc').innerHTML='수집원: '+((LARCH.meta&&LARCH.meta.sources)||['네이버 뉴스 API']).join(' · ');
