@@ -51,6 +51,26 @@ POS = ["성과","확대","호평","호응","우수","선정","수상","개선","
 NEG = ["논란","불만","지적","실패","축소","삭감","미흡","부족","문제","비판","우려","갈등",
        "반발","무산","중단","적발","부정","피해","혼란","저조","미달","소진","형평성"]
 
+# === 청년정책 연관성 판정 ===
+# 청년정책과 무관한 글(연예·스포츠·사건사고·단순 인물 '청년' 등) 제외를 위해
+# 아래 정책 키워드가 제목/본문에 1개 이상 있어야 채택한다.
+POLICY_KW = [
+    "청년정책","청년 정책","시행계획","지원사업","지원 사업","일자리","취업","창업",
+    "주거","월세","전세","임대주택","청년수당","청년통장","자산형성","정착","면접",
+    "인턴","취창업","역량강화","직업훈련","장학","멘토링","청년센터","청년몰","청년공간",
+    "참여기구","청년위원","바우처","복지","문화패스","돌봄","고립은둔","니트","구직",
+    "조례","예산","공모","모집","선발","간담회","정책참여단","청년친화","청년기본"]
+# 명백한 비정책 잡음(연예/스포츠/사건 등) 제목에 있으면 제외
+NOISE_KW = ["아이돌","데뷔","드라마","예능","연예","가수","배우","걸그룹","보이그룹",
+            "야구","축구","농구","골프","프로구단","감독 선임","FA","이적","우승 트로피",
+            "사망","숨진 채","구속","檢","피의자","살해","마약 투약","음주운전","성범죄"]
+
+def is_policy_related(title, desc):
+    t = title + " " + desc
+    if any(k in t for k in NOISE_KW):
+        return False
+    return any(k in t for k in POLICY_KW)
+
 def _req(url, headers=None, data=None):
     req = urllib.request.Request(url, headers=headers or {}, data=data)
     with urllib.request.urlopen(req, timeout=20) as r:
@@ -137,6 +157,8 @@ def main():
             for it in items:
                 title = clean(it.get("title")); desc = clean(it.get("description"))
                 if "청년" not in (title + desc):     # 청년 키워드 필수
+                    continue
+                if not is_policy_related(title, desc):  # 청년'정책' 연관성 필수(잡음 제거)
                     continue
                 sido = sido_of(title, desc, hinted)
                 if not sido:                          # 동음 오탐 방지

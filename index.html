@@ -246,6 +246,8 @@ th.sortable:hover{color:var(--coral-d)}
 #lTbl .fcell{font-family:var(--mono);text-align:center;border-radius:0}
 #lTbl .tot td{font-weight:800;border-top:2px solid var(--navy);background:var(--navy-s)!important;border-bottom:none}
 #lTbl .tot .num{font-family:var(--mono)}
+/* 지자체 서브 네비 */
+.lsubnav{margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -491,6 +493,12 @@ th.sortable:hover{color:var(--coral-d)}
       <span class="tag real">실데이터</span>17개 광역지자체 <b>2026년 청년정책 시행계획</b> 전수 판독 · 공통 지표(총 과제수 · 청년기본법 5대 분야별 과제수). 합계=분야합 검증 완료(울산은 세부계획 카운트, 분야합 95/공식 96).
     </div>
 
+    <div class="seg lsubnav" id="lsubNav">
+      <button data-l="compare" class="on">① 시·도 비교 현황</button>
+      <button data-l="radar">② 지자체 정책 레이더</button>
+    </div>
+
+    <div id="localCompare">
     <div class="kpis" id="lkpis" style="grid-template-columns:repeat(5,1fr)"></div>
 
     <div class="card" style="margin-bottom:14px">
@@ -523,7 +531,9 @@ th.sortable:hover{color:var(--coral-d)}
     </div>
 
     <div class="foot" id="lfoot"></div>
+    </div><!-- /localCompare -->
 
+    <div id="localRadar" class="hide">
     <!-- ============ 지자체 정책 레이더 ============ -->
     <div class="modhead" style="margin-top:26px">
       <div class="mt"><span class="ix">＋</span>지자체 정책 레이더 · Local Policy Radar</div>
@@ -573,7 +583,8 @@ th.sortable:hover{color:var(--coral-d)}
       </div>
     </div>
 
-    <div class="foot" id="lfoot"></div>
+    <div class="foot" id="lfoot2"></div>
+    </div><!-- /localRadar -->
   </div><!-- /localView -->
 </main>
 
@@ -1015,7 +1026,7 @@ function renderLocal(){
     data:{labels:sorted.map(i=>i.sido),datasets:[{data:sorted.map(i=>i.total),
       backgroundColor:sorted.map(i=>i.type==='도'?'#2B3A55':'#E85A3C'),borderRadius:4,barThickness:19}]},
     options:{indexAxis:'y',maintainAspectRatio:false,layout:{padding:{right:34}},
-      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',color:'#5A6473',clip:false,font:{family:MONO,weight:'700',size:11},formatter:(v,c)=>v+(sorted[c.dataIndex].verified?'':'*')}},
+      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',color:'#5A6473',clip:false,font:{family:MONO,weight:'700',size:11},formatter:v=>v}},
       scales:{x:{grace:'4%',grid:{color:css('--line2')},ticks:{font:{family:MONO}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'600'}}}}}});
 
   // 분야 stacked
@@ -1054,7 +1065,7 @@ function renderLTable(){
   rows.forEach((i,idx)=>{
     const rk = lSort.key==='total'&&lSort.dir<0 && !lQuery ? `<span class="rkbadge${idx<3?' top':''}">${idx+1}</span>` : '';
     h+=`<tr><td class="lt-rk">${rk}</td>`+
-       `<td class="lt-sido">${i.sido}${i.verified?'':' <span class="estb">96*</span>'}</td>`+
+       `<td class="lt-sido">${i.sido}</td>`+
        `<td class="num lt-tot"><div class="barcell"><span class="barfill" style="width:${i.total/maxTot*100}%"></span><b>${i.total}</b></div></td>`+
        F.map(f=>{const v=i.fields[f]; const op=0.10+0.55*(v/fMax[f]);
          return `<td class="num fcell" style="background:${LFC[f]}${Math.round(op*255).toString(16).padStart(2,'0')}">${v}</td>`;}).join('')+'</tr>';});
@@ -1151,7 +1162,14 @@ function renderLFeed(){
     ||'<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';
 }
 
-let curView='central', localInit=false;
+let curView='central', localInit=false, lradarShown=false;
+function switchLocalTab(t){
+  $('localCompare').classList.toggle('hide',t!=='compare');
+  $('localRadar').classList.toggle('hide',t!=='radar');
+  document.querySelectorAll('#lsubNav button').forEach(b=>b.classList.toggle('on',b.dataset.l===t));
+  if(t==='radar'&&!lradarShown){renderLocalRadar();lradarShown=true;}
+  window.scrollTo(0,0);
+}
 function switchView(v){
   curView=v;
   $('centralView').classList.toggle('hide',v!=='central');
@@ -1159,7 +1177,7 @@ function switchView(v){
   $('centralNav').style.display = v==='central'?'':'none';
   document.querySelectorAll('#viewToggle button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   $('srcBadge').textContent = v==='central'?'시행계획 375과제':'17개 시·도 1,563과제';
-  if(v==='local'){ if(!localInit){renderLocal();renderLocalRadar();localInit=true;} }
+  if(v==='local'){ if(!localInit){renderLocal();localInit=true;} switchLocalTab('compare'); }
   window.scrollTo(0,0);
 }
 
@@ -1189,6 +1207,8 @@ async function init(){
   const ls=$('lSearch'); if(ls)ls.oninput=()=>{lQuery=ls.value.trim();renderLTable();};
   // 지자체 레이더: 기간/시도/감성
   const lsf=$('lsidoFilter'); if(lsf){SIDONAMES.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;lsf.appendChild(o);}); lsf.onchange=()=>{lsido=lsf.value;renderLocalRadar();};}
+  document.querySelectorAll('#lsubNav button').forEach(b=>b.onclick=()=>switchLocalTab(b.dataset.l));
+  $('lfoot2').innerHTML='수집: 네이버 뉴스 API · 시·도별 「{시도} 청년정책」 검색 → 시·도 매칭 + 감성분류 · collect_local_news.py 실행 시 누적 · (주)서던포스트';
   document.querySelectorAll('#lperiodNav button').forEach(b=>b.onclick=()=>{lperiod=b.dataset.p;document.querySelectorAll('#lperiodNav button').forEach(x=>x.classList.toggle('on',x===b));renderLocalRadar();});
   document.querySelectorAll('#lsentFilter button').forEach(b=>b.onclick=()=>{lsent=b.dataset.s;document.querySelectorAll('#lsentFilter button').forEach(x=>x.classList.toggle('on',x===b));renderLFeed();});
   $('lfoot').innerHTML='출처: 2026년 광역지자체 청년정책 시행계획 17종 · 분야별 총괄표/추진계획 개요 판독 · 합계=분야합 검증(16개), 울산 세부계획 카운트(95/공식 96, *).<br>분야 분류: 청년기본법 5대 영역 기준 통합(참여·기반/관리→참여·권리, 복지·문화→금융·복지·문화). · (주)서던포스트';
