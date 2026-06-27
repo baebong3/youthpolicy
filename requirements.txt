@@ -1,0 +1,4 @@
+requests
+feedparser
+python-dotenv
+anthropic        # 선택: Claude로 정밀 매칭·감성분류 시 필요 (없으면 키워드 방식 폴백)
