@@ -1,0 +1,13 @@
+{
+ "meta": {
+  "generated": "2026-06-27",
+  "total": 0,
+  "demo_backfill": false,
+  "sources": [
+   "네이버 뉴스 API",
+   "정책브리핑(korea.kr)",
+   "연합뉴스 RSS"
+  ]
+ },
+ "items": []
+}

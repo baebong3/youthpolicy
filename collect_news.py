@@ -28,6 +28,7 @@ except ImportError:
 DB = 'news.db'
 TASKS = 'tasks.json'                # parse_taskcards.py 산출물
 OUT = 'daily_news.json'
+OUT_ARCHIVE = 'news_archive.json'
 NAVER_ID = os.environ.get('NAVER_ID')
 NAVER_SECRET = os.environ.get('NAVER_SECRET')
 ANTHROPIC_KEY = (os.environ.get('ANTHROPIC_API_KEY') or '').strip()
@@ -69,18 +70,30 @@ def match_policy(title, tasks, idx=None):
     return best if n >= 2 else None   # 가중점수 2 이상
 
 # ───────────────────────── 2. 수집기 ─────────────────────────
-def fetch_naver(query, display=20):
+def fetch_naver(query, max_results=1000):
+    """네이버 검색 API는 쿼리당 최대 1000건(start 1~1000, display 100)까지 제공.
+    pubDate가 들어와 며칠/몇 주 전 기사까지 한 번에 긁어옴(첫 실행 백필용)."""
     import requests
     if not (NAVER_ID and NAVER_SECRET):
         return []
-    r = requests.get('https://openapi.naver.com/v1/search/news.json',
-        headers={'X-Naver-Client-Id': NAVER_ID, 'X-Naver-Client-Secret': NAVER_SECRET},
-        params={'query': query, 'display': display, 'sort': 'date'}, timeout=10)
     out = []
-    for it in r.json().get('items', []):
-        t = re.sub(r'<[^>]+>', '', html.unescape(it['title']))
-        out.append({'title': t, 'url': it['originallink'] or it['link'],
-                    'source': '네이버뉴스', 'pubdate': it.get('pubDate', '')})
+    for start in range(1, min(max_results, 1000) + 1, 100):
+        try:
+            r = requests.get('https://openapi.naver.com/v1/search/news.json',
+                headers={'X-Naver-Client-Id': NAVER_ID, 'X-Naver-Client-Secret': NAVER_SECRET},
+                params={'query': query, 'display': 100, 'start': start, 'sort': 'date'}, timeout=10)
+            items = r.json().get('items', [])
+        except Exception:
+            break
+        if not items:
+            break
+        for it in items:
+            t = re.sub(r'<[^>]+>', '', html.unescape(it['title']))
+            out.append({'title': t, 'url': it['originallink'] or it['link'],
+                        'source': '네이버뉴스', 'pubdate': it.get('pubDate', '')})
+        time.sleep(0.1)
+        if len(items) < 100:
+            break
     return out
 
 def fetch_rss(url, source):
@@ -93,10 +106,14 @@ def fetch_rss(url, source):
     return out
 
 def collect_raw():
-    """수집 대상: 분야 키워드 + 정책브리핑/연합뉴스 청년 RSS"""
+    """수집 대상: 청년정책 핵심 키워드 다발(쿼리당 최대 1000건) + 정책브리핑/연합뉴스 RSS.
+    첫 실행 시 받을 수 있는 최근 기사를 최대한 긁고, 이후 매일 증분 누적."""
     raw = []
-    for q in ['청년정책', '청년 일자리', '청년 주거', '청년 도약계좌', '청년 월세', '청년 인턴']:
-        raw += fetch_naver(q); time.sleep(0.2)
+    queries = ['청년정책', '청년 일자리', '청년 주거', '청년 월세', '청년 전세',
+               '청년 취업', '청년 창업', '청년 인턴', '청년 지원', '청년 장학금',
+               '청년 도약계좌', '청년 내일채움', '청년 마음건강', '청년 자산형성']
+    for q in queries:
+        raw += fetch_naver(q); time.sleep(0.15)
     raw += fetch_rss('https://www.korea.kr/rss/policy.xml', '정책브리핑')
     raw += fetch_rss('https://www.yna.co.kr/rss/news.xml', '연합뉴스')
     return raw
@@ -150,6 +167,36 @@ def classify_claude(batch, tasks):
     return json.loads(txt)
 
 # ───────────────────────── 5. 일일 산출 ─────────────────────────
+def export_archive(c):
+    """news.db 전체 → news_archive.json 으로 병합 누적(기존 항목 보존, id 기준 중복제거).
+    주/월/연 리포트가 이 파일을 읽음. 시드(시연용 1년)와 실데이터가 함께 쌓임."""
+    rows = c.execute('SELECT date,title,url,source,code,field,dept,sentiment,is_new FROM news').fetchall()
+    new_items = [{'id': hashlib.md5((str(code)+title).encode()).hexdigest()[:10],
+                  'date': d, 'title': title, 'url': url, 'source': src,
+                  'code': code, 'field': field, 'dept': dept,
+                  'sentiment': sent or '중립', 'is_new': int(isnew or 0)}
+                 for d, title, url, src, code, field, dept, sent, isnew in rows]
+    merged = {}
+    demo = False
+    if os.path.exists(OUT_ARCHIVE):
+        try:
+            arch = json.load(open(OUT_ARCHIVE, encoding='utf-8'))
+            demo = bool(arch.get('meta', {}).get('demo_backfill'))
+            for it in arch.get('items', []):
+                merged[it['id']] = it
+        except Exception:
+            pass
+    for it in new_items:
+        merged[it['id']] = it
+    items = sorted(merged.values(), key=lambda x: x['date'], reverse=True)
+    dates = [i['date'] for i in items] or [date.today().isoformat()]
+    meta = {'generated': date.today().isoformat(), 'span_start': min(dates), 'span_end': max(dates),
+            'total': len(items), 'demo_backfill': demo,
+            'sources': ['정책브리핑(korea.kr)', '네이버 뉴스 API', '연합뉴스 RSS']}
+    json.dump({'meta': meta, 'items': items}, open(OUT_ARCHIVE, 'w', encoding='utf-8'), ensure_ascii=False)
+    print(f"news_archive.json 누적: 총 {len(items)}건 ({meta['span_start']}~{meta['span_end']})")
+
+
 def build_daily(c, tasks):
     today = date.today().isoformat()
     rows = c.execute('SELECT date,title,url,source,code,field,dept,sentiment,is_new '
@@ -186,6 +233,14 @@ def build_daily(c, tasks):
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
     print(f"daily_news.json 생성: {len(items)}건 / 신규 {len(new_pol)} / 주의 {len(watch)}")
 
+def parse_pubdate(s):
+    """네이버 pubDate(RFC822: 'Mon, 26 Jun 2026 10:00:00 +0900') → 'YYYY-MM-DD'. 실패 시 오늘."""
+    try:
+        from email.utils import parsedate_to_datetime
+        return parsedate_to_datetime(s).date().isoformat()
+    except Exception:
+        return date.today().isoformat()
+
 def main():
     tasks = json.load(open(TASKS, encoding='utf-8'))
     idx = build_index(tasks)
@@ -197,7 +252,7 @@ def main():
         title = r['title']
         code = match_policy(title, tasks, idx)
         rid = hashlib.md5((title + r['url']).encode()).hexdigest()[:12]
-        staged.append({'id': rid, 'date': date.today().isoformat(), 'title': title,
+        staged.append({'id': rid, 'date': parse_pubdate(r.get('pubdate', '')), 'title': title,
                        'url': r['url'], 'source': r['source'], 'code': code})
     # 분류
     if USE_CLAUDE:
@@ -222,6 +277,7 @@ def main():
         s['dept'] = t['dept'] if t else None
     upsert(c, keep)
     build_daily(c, tasks)
+    export_archive(c)
 
 if __name__ == '__main__':
     main()

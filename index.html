@@ -144,6 +144,26 @@ table.dt tr:hover td{background:var(--bg)}
 .miniseg button.on[data-s="긍정"]{background:var(--good)}
 .miniseg button.on[data-s="부정"]{background:var(--coral)}
 .miniseg button.on[data-s="중립"]{background:var(--steel)}
+
+/* 기간 리포트 바 */
+.rptbar{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.seg-period button{padding:7px 15px;font-size:12.5px}
+.seg-period button.on{background:var(--navy)}
+.rng{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--muted)}
+/* 핵심 요약 */
+.summary{background:linear-gradient(180deg,#fff,#fcfcfd);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+.summary::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--coral),var(--navy))}
+.summary-hd{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+.summary-hd .sb-ix{font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:var(--navy);padding:3px 9px;border-radius:6px}
+.summary-hd span:last-child{font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.summary ol{margin:0;padding-left:0;list-style:none;counter-reset:s}
+.summary li{counter-increment:s;position:relative;padding:7px 0 7px 30px;font-size:13px;line-height:1.6;color:var(--ink2);border-bottom:1px solid var(--line2)}
+.summary li:last-child{border-bottom:none}
+.summary li::before{content:counter(s);position:absolute;left:0;top:8px;width:19px;height:19px;border-radius:6px;background:var(--coral-s);color:var(--coral-d);font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.summary li b{color:var(--ink);font-weight:700}
+.summary li .pos{color:var(--good);font-weight:700}
+.summary li .neg{color:var(--coral-d);font-weight:700}
+.summary-src{font-size:10.5px;color:var(--muted);margin-top:11px;padding-top:10px;border-top:1px solid var(--line2)}
 .feed-s{flex-shrink:0;width:4px;align-self:stretch;border-radius:3px;margin-top:1px}
 .feed-s.긍정{background:var(--good)} .feed-s.부정{background:var(--coral)} .feed-s.중립{background:var(--muted)}
 .feed-bd{flex:1;min-width:0}
@@ -215,7 +235,7 @@ a.feed-tt:hover .ext{color:var(--coral)}
       <button data-m="3">③ 부처별 드릴다운</button>
       <button data-m="4">④ 청년체감 지수판</button>
       <button data-m="5">⑤ 개선 추적판</button>
-      <button data-m="6">⑥ 일일 정책 레이더</button>
+      <button data-m="6">⑥ 정책 레이더 리포트</button>
     </div>
     <div class="fdiv"></div>
     <span class="fb-lbl">분야</span>
@@ -352,34 +372,53 @@ a.feed-tt:hover .ext{color:var(--coral)}
     </div>
   </section>
 
-  <!-- ============ 모듈 6 : 일일 정책 레이더 ============ -->
+  <!-- ============ 모듈 6 : 정책 레이더 리포트 ============ -->
   <section id="mod6" class="hide">
     <div class="modhead">
-      <div class="mt"><span class="ix">6</span>일일 정책 레이더 · Daily Policy Radar</div>
-      <div class="ms">매일 자동 수집한 청년정책 뉴스를 과제별로 매칭 → 긍·부정 감성과 신규정책을 일일 브리핑으로 환류</div>
+      <div class="mt"><span class="ix">6</span>정책 레이더 리포트 · Policy Radar Report</div>
+      <div class="ms">자동 수집한 청년정책 뉴스를 과제별로 매칭 → 일·주·월·연 단위로 긍·부정 동향과 신규정책을 환류</div>
     </div>
+
+    <div class="rptbar">
+      <div class="miniseg seg-period" id="periodNav">
+        <button data-p="day" class="on">일간 · 어제</button>
+        <button data-p="week">주간 · 7일</button>
+        <button data-p="month">월간 · 30일</button>
+        <button data-p="year">연간 · 365일</button>
+      </div>
+      <span class="rng" id="rngLbl"></span>
+    </div>
+
+    <!-- 핵심 요약 -->
+    <div class="summary" id="summaryBox">
+      <div class="summary-hd"><span class="sb-ix">요약</span><span id="summaryTitle">핵심 요약</span></div>
+      <ol id="summaryList"></ol>
+      <div id="dailySrc" class="summary-src"></div>
+    </div>
+
     <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
-      <div class="kpi k2"><div class="kpi-lbl">오늘 수집</div><div class="kpi-val" id="d1">—</div><div class="kpi-sub" id="d1s">매칭 뉴스</div></div>
-      <div class="kpi k5"><div class="kpi-lbl">긍정 뉴스</div><div class="kpi-val" id="d2">—</div><div class="kpi-sub">정책 호응·성과</div></div>
-      <div class="kpi k3"><div class="kpi-lbl">부정 뉴스</div><div class="kpi-val" id="d3">—</div><div class="kpi-sub">불만·논란·지적</div></div>
+      <div class="kpi k2"><div class="kpi-lbl" id="d1l">수집 뉴스</div><div class="kpi-val" id="d1">—</div><div class="kpi-sub" id="d1s">과제 매칭</div></div>
+      <div class="kpi k5"><div class="kpi-lbl">긍정 뉴스</div><div class="kpi-val" id="d2">—</div><div class="kpi-sub" id="d2s">정책 호응·성과</div></div>
+      <div class="kpi k3"><div class="kpi-lbl">부정 뉴스</div><div class="kpi-val" id="d3">—</div><div class="kpi-sub" id="d3s">불만·논란·지적</div></div>
       <div class="kpi"><div class="kpi-lbl">신규 정책 탐지</div><div class="kpi-val" id="d4">—</div><div class="kpi-sub">시행계획 외 신규</div></div>
       <div class="kpi k4"><div class="kpi-lbl">주의 과제</div><div class="kpi-val" id="d5">—</div><div class="kpi-sub">부정 뉴스 집중</div></div>
     </div>
 
-    <div class="note" style="border-left-color:var(--navy)">
-      <span class="tag real" style="background:var(--navy-s);color:var(--navy)">일일 브리핑</span>
-      <span id="dailyBrief">—</span>
-      <span id="dailySrc" style="display:block;margin-top:6px;color:var(--muted);font-size:10.5px"></span>
+    <!-- 추이 차트 (주/월/연) -->
+    <div id="trendWrap" class="card" style="margin-bottom:14px">
+      <div class="card-hd"><div><div class="eyebrow">기간 추이</div><div class="ctitle" id="trendTitle">수집·감성 추이</div><div class="csub" id="trendSub">긍정/중립/부정 누적</div></div>
+        <div class="legbox"><span class="lg"><i style="background:var(--good)"></i>긍정</span><span class="lg"><i style="background:var(--muted)"></i>중립</span><span class="lg"><i style="background:var(--coral)"></i>부정</span></div></div>
+      <div class="chwrap" style="height:240px"><canvas id="cTrend"></canvas></div>
     </div>
 
     <div id="newPolWrap" class="card" style="margin-bottom:14px">
-      <div class="card-hd"><div><div class="eyebrow">신규 정책 탐지</div><div class="ctitle">오늘 새로 포착된 청년정책</div><div class="csub">기존 374개 과제에 없는 신규 발표·시행 — 자동 알림</div></div></div>
+      <div class="card-hd"><div><div class="eyebrow">신규 정책 탐지</div><div class="ctitle" id="newPolTitle">새로 포착된 청년정책</div><div class="csub">기존 374개 과제에 없는 신규 발표·시행 — 자동 알림</div></div></div>
       <div id="newPolList"></div>
     </div>
 
     <div class="grid g-11">
       <div class="card">
-        <div class="card-hd"><div><div class="eyebrow">감성 동향</div><div class="ctitle">분야별 긍·부정 뉴스</div><div class="csub">최근 3일 누적 · 긍정/중립/부정</div></div>
+        <div class="card-hd"><div><div class="eyebrow">감성 동향</div><div class="ctitle">분야별 긍·부정 뉴스</div><div class="csub" id="sentSub">긍정/중립/부정</div></div>
           <div class="legbox"><span class="lg"><i style="background:var(--good)"></i>긍정</span><span class="lg"><i style="background:var(--muted)"></i>중립</span><span class="lg"><i style="background:var(--coral)"></i>부정</span></div></div>
         <div class="chwrap" style="height:300px"><canvas id="cSent"></canvas></div>
       </div>
@@ -400,40 +439,122 @@ a.feed-tt:hover .ext{color:var(--coral)}
 </main>
 
 <script>
-/* ===== 일일 정책 레이더 데이터 (데모 임베드 · 운영 시 daily_news.json fetch로 교체) ===== */
-let DAILY = {"meta": {"date": "2026-06-27", "collected": 46, "sentiment": {"긍정": 14, "부정": 17, "중립": 15}, "new_count": 3, "sources": ["정책브리핑(korea.kr)", "네이버 뉴스 API", "연합뉴스 RSS"], "demo": true}, "brief": "6월 27일 기준 청년정책 관련 뉴스 46건 수집(긍정 14 · 부정 17 · 중립 15). 신규 정책 3건 탐지 — 전세사기 선구제 시행령, 일경험 인턴 1만명 추가가 주목됨. 부정 뉴스는 '주거' 분야에 집중되어 해당 분야 과제의 청년 체감도 모니터링 강화가 필요함.", "new_policies": [{"title": "국토부, 청년 전세사기 피해 ‘선구제 후회수’ 특별법 시행령 개정", "dept": "국토교통부", "field": "주거", "date": "2026-06-27", "summary": "피해 청년 보증금 우선 구제 범위를 1억5천만원으로 상향. 6월 27일부터 시행."}, {"title": "고용부, 청년 ‘일경험 인턴’ 1만명 추가 모집 신설", "dept": "고용노동부", "field": "일자리", "date": "2026-06-27", "summary": "민간·공공 일경험 기회를 하반기 1만명 추가. 기존 시행계획 미반영 신규 과제."}, {"title": "금융위, 청년도약계좌 가입 소득요건 완화 추진", "dept": "금융위원회", "field": "금융·복지·문화", "date": "2026-06-26", "summary": "총급여 7,500만원까지 가입 허용 검토. 청년 자산형성 지원 확대."}], "watch": [{"code": "Ⅰ-1-1-(6)", "name": "국세･국세외수입 체납관리단을 통한 청년 …", "dept": "국세청", "neg": 1, "field": "일자리"}, {"code": "Ⅰ-1-3-(45)", "name": "지역전문가 양성 및 공급", "dept": "산업부", "neg": 1, "field": "일자리"}, {"code": "Ⅲ-3-3-(2)", "name": "고시원 등 거주청년 이주비용 패키지 지원", "dept": "국토교통부", "neg": 1, "field": "주거"}, {"code": "Ⅲ-1-2-(3)", "name": "기숙사형 청년주택 공급", "dept": "국토교통부", "neg": 1, "field": "주거"}, {"code": "Ⅲ-3-3-(1)", "name": "고시원·쪽방·반지하 등 거주청년 공공임대…", "dept": "국토교통부", "neg": 1, "field": "주거"}, {"code": "Ⅲ-3-3-(4)", "name": "청년 1인 가구 안전망 확보", "dept": "경찰청", "neg": 1, "field": "주거"}, {"code": "Ⅲ-2-1-(3)", "name": "주거안정장학금 지원", "dept": "교육부", "neg": 1, "field": "주거"}, {"code": "Ⅲ-3-1-(2)", "name": "청년 대상 전세사기 단속", "dept": "경찰청", "neg": 1, "field": "주거"}], "items": [{"id": "b0ad7e477b", "date": "2026-06-27", "title": "고용노동부, 청년의 구직활동 지원 2026년 시행계획 발표", "source": "이데일리", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=56c675fc8e4d", "code": "Ⅰ-1-2-(2)", "field": "일자리", "dept": "고용노동부", "sentiment": "중립"}, {"id": "8d3bc1bb88", "date": "2026-06-27", "title": "메이커 스페이스 지원 관련 토론회 “개선 방향 논의”", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=afe338270060", "code": "Ⅰ-4-2-(6)", "field": "일자리", "dept": "중소벤처기업부", "sentiment": "중립"}, {"id": "27c6c049ec", "date": "2026-06-27", "title": "북향민 청년 취업역량 강화 모니터링 결과 공개", "source": "이데일리", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=322e7ff9f58e", "code": "Ⅰ-1-3-(13)", "field": "일자리", "dept": "통일부", "sentiment": "중립"}, {"id": "8a709bfc1f", "date": "2026-06-27", "title": "지역공동체 활성화 모니터링 결과 공개", "source": "한겨레", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=bd91dfcbbdb1", "code": "Ⅴ-3-1-(3)", "field": "참여·권리", "dept": "행정안전부", "sentiment": "중립"}, {"id": "3b3c4e5959", "date": "2026-06-27", "title": "국토교통부 기숙사형 청년주택 공급, 사각지대 방치 비판", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=2c0f5d952a6a", "code": "Ⅲ-1-2-(3)", "field": "주거", "dept": "국토교통부", "sentiment": "부정"}, {"id": "98bdc8d593", "date": "2026-06-27", "title": "주거안정장학금 지원 실효성 논란… “현장선 체감 안 돼”", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=23de0b80eb2b", "code": "Ⅲ-2-1-(3)", "field": "주거", "dept": "교육부", "sentiment": "부정"}, {"id": "0dd1734f11", "date": "2026-06-27", "title": "대학생 현장실습 제도개선 집행률 저조… 실적 부진 도마 위", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=8688126e5a82", "code": "Ⅱ-2-1-(2)", "field": "교육·직업훈련", "dept": "교육부", "sentiment": "부정"}, {"id": "d82613e161", "date": "2026-06-27", "title": "대학생 근로장학금 실효성 논란… “현장선 체감 안 돼”", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=ce4c38826330", "code": "Ⅱ-3-1-(5)", "field": "교육·직업훈련", "dept": "교육부", "sentiment": "부정"}, {"id": "de373d501d", "date": "2026-06-27", "title": "OTT·콘텐츠 특성화 대학원 지원 집행률 저조… 실적 부진 도마 위", "source": "한겨레", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=9f00e28ca391", "code": "Ⅳ-4-1-(2)", "field": "금융·복지·문화", "dept": "문화체육관광부", "sentiment": "부정"}, {"id": "581d7ba601", "date": "2026-06-27", "title": "국가보훈부 청년 보훈가족 마음건강 지원, 사각지대 방치 비판", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=dcf6ae554c96", "code": "Ⅳ-3-1-(4)", "field": "금융·복지·문화", "dept": "국가보훈부", "sentiment": "부정"}, {"id": "2a233c1f90", "date": "2026-06-27", "title": "국민권익위원회 “공공기관 채용 비위 근절 추진 성과 가시화”… 청년 만족도 상승", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=2db025f48781", "code": "Ⅰ-3-1-(3)", "field": "일자리", "dept": "국민권익위원회", "sentiment": "긍정"}, {"id": "5ef3d56db7", "date": "2026-06-27", "title": "캠퍼스 혁신파크 조성, 청년 호응 속 신청 폭증… 조기 소진", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=33a43323d0c6", "code": "Ⅰ-2-2-(2)", "field": "일자리", "dept": "국토교통부", "sentiment": "긍정"}, {"id": "27e341d86b", "date": "2026-06-27", "title": ", 청년 호응 속 신청 폭증… 조기 소진", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=6fd2950ee0d6", "code": "Ⅱ-1-3-(41)", "field": "교육·직업훈련", "dept": "법무부", "sentiment": "긍정"}, {"id": "b40c286a1e", "date": "2026-06-27", "title": "개인기초연구, 청년 호응 속 신청 폭증… 조기 소진", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=8ee03db7a0de", "code": "Ⅱ-1-2-(4)", "field": "교육·직업훈련", "dept": "과학기술정보통신부", "sentiment": "긍정"}, {"id": "b3bd335a04", "date": "2026-06-27", "title": "소방청 “청년 영상제작단 「119프레임」 선발‧운… 성과 가시화”… 청년 만족도 상승", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=bb91689a2150", "code": "Ⅴ-1-3-(5)", "field": "참여·권리", "dept": "소방청", "sentiment": "긍정"}, {"id": "621f8b018d", "date": "2026-06-26", "title": "청년전용 저리대출상품 운영 모니터링 결과 공개", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=9337b1eb18db", "code": "Ⅲ-2-2-(1)", "field": "주거", "dept": "국토교통부", "sentiment": "중립"}, {"id": "81f8b17bb4", "date": "2026-06-26", "title": "과학기술정보통신부, 여성 연구자 역량 강화 2026년 시행계획 발표", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=aaf70a2bbe12", "code": "Ⅱ-1-2-(2)", "field": "교육·직업훈련", "dept": "과학기술정보통신부", "sentiment": "중립"}, {"id": "e91e5a6d36", "date": "2026-06-26", "title": "이노베이션아카데미 모니터링 결과 공개", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=bbd086e49ddd", "code": "Ⅱ-1-1-(15)", "field": "교육·직업훈련", "dept": "과학기술정보통신부", "sentiment": "중립"}, {"id": "8d5c6dcb57", "date": "2026-06-26", "title": "국민연금 군 복무 크레딧 확대 모니터링 결과 공개", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=6af0f9ba061e", "code": "Ⅳ-4-5-(3)", "field": "금융·복지·문화", "dept": "보건복지부", "sentiment": "중립"}, {"id": "f2bde84cb9", "date": "2026-06-26", "title": "자살예방상담전화 관련 토론회 “개선 방향 논의”", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=f17675012d6a", "code": "Ⅳ-3-3-(2)", "field": "금융·복지·문화", "dept": "보건복지부", "sentiment": "중립"}, {"id": "812649e109", "date": "2026-06-26", "title": "해양경찰 관련 학과 보유 대학교 간 교육… 모니터링 결과 공개", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=1497f3db799b", "code": "Ⅴ-1-3-(8)", "field": "참여·권리", "dept": "해양경찰청", "sentiment": "중립"}, {"id": "ca93534bfc", "date": "2026-06-26", "title": "청년마을기업 설명회 개최… 신청 안내", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=4521b8c4491a", "code": "Ⅴ-3-1-(2)", "field": "참여·권리", "dept": "행정안전부", "sentiment": "중립"}, {"id": "32c43cbc89", "date": "2026-06-26", "title": "국세･국세외수입 체납관리단을 통한 청년 … 실효성 논란… “현장선 체감 안 돼”", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=b2296f463187", "code": "Ⅰ-1-1-(6)", "field": "일자리", "dept": "국세청", "sentiment": "부정"}, {"id": "831d52ada8", "date": "2026-06-26", "title": "지역전문가 양성 및 공급 신청 절차 복잡… 청년 접근성 지적", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=e6ef88750a34", "code": "Ⅰ-1-3-(45)", "field": "일자리", "dept": "산업부", "sentiment": "부정"}, {"id": "7a1e75c6fd", "date": "2026-06-26", "title": "고시원 등 거주청년 이주비용 패키지 지원 실효성 논란… “현장선 체감 안 돼”", "source": "이데일리", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=6b547b2ee744", "code": "Ⅲ-3-3-(2)", "field": "주거", "dept": "국토교통부", "sentiment": "부정"}, {"id": "2cec9b0838", "date": "2026-06-26", "title": "청년 대상 전세사기 단속 실효성 논란… “현장선 체감 안 돼”", "source": "뉴스1", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=4666220eea32", "code": "Ⅲ-3-1-(2)", "field": "주거", "dept": "경찰청", "sentiment": "부정"}, {"id": "9c90ff0c0f", "date": "2026-06-26", "title": "해외조달 전문인력 양성 사업 운영 신청 절차 복잡… 청년 접근성 지적", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=c8551dbe9804", "code": "Ⅱ-1-3-(36)", "field": "교육·직업훈련", "dept": "조달청", "sentiment": "부정"}, {"id": "cc0899d92a", "date": "2026-06-26", "title": "모두를 위한 재무상담 운영 예산 조기 소진에 “신청도 못 했다” 청년 불만", "source": "뉴스1", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=1fed1a33213a", "code": "Ⅳ-1-5-(1)", "field": "금융·복지·문화", "dept": "금융위원회", "sentiment": "부정"}, {"id": "13507e5283", "date": "2026-06-26", "title": "공공기관 청년인턴 운영, 청년 호응 속 신청 폭증… 조기 소진", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=c5210b2b3867", "code": "Ⅰ-1-3-(19)", "field": "일자리", "dept": "재정경제부", "sentiment": "긍정"}, {"id": "bb810efd0c", "date": "2026-06-26", "title": "방송통신위원회 “미디어 청년 창업지원 성과 가시화”… 청년 만족도 상승", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=3afdcca2882e", "code": "Ⅰ-4-2-(10)", "field": "일자리", "dept": "방송통신위원회", "sentiment": "긍정"}, {"id": "04cd91b2d5", "date": "2026-06-26", "title": "게임기획지원, 청년 호응 속 신청 폭증… 조기 소진", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=c4096d796f85", "code": "Ⅰ-4-2-(9)", "field": "일자리", "dept": "문화체육관광부", "sentiment": "긍정"}, {"id": "bdaca01867", "date": "2026-06-26", "title": "청년특화주택 공급, 청년 체감도 개선 효과 확인", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=2419634c8682", "code": "Ⅲ-1-1-(6)", "field": "주거", "dept": "국토교통부", "sentiment": "긍정"}, {"id": "e21acf46ad", "date": "2026-06-25", "title": "교육부, 지역혁신중심 대학지원체계 2026년 시행계획 발표", "source": "조선일보", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=849698164f71", "code": "Ⅰ-2-2-(1)", "field": "일자리", "dept": "교육부", "sentiment": "중립"}, {"id": "1e22a30a4c", "date": "2026-06-25", "title": "기상청 기상‧기후분야 국제기구 청년진출 지원 운영 현황 점검", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=29ff33b691af", "code": "Ⅱ-1-3-(39)", "field": "교육·직업훈련", "dept": "기상청", "sentiment": "중립"}, {"id": "506b3fd59b", "date": "2026-06-25", "title": "미래세대간의 교류사업 활성화 설명회 개최… 신청 안내", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=8a3172290242", "code": "Ⅴ-3-2-(7)", "field": "참여·권리", "dept": "국가보훈부", "sentiment": "중립"}, {"id": "407ae18e45", "date": "2026-06-25", "title": "청년이 참여하는 해양경찰 함정설계 정책 … 관련 토론회 “개선 방향 논의”", "source": "청년정책 뉴스레터", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=a195b6213877", "code": "Ⅴ-1-3-(9)", "field": "참여·권리", "dept": "해양경찰청", "sentiment": "중립"}, {"id": "5dc36e78ea", "date": "2026-06-25", "title": "고시원·쪽방·반지하 등 거주청년 공공임대… 예산 조기 소진에 “신청도 못 했다” 청년 불만", "source": "한겨레", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=69b476221246", "code": "Ⅲ-3-3-(1)", "field": "주거", "dept": "국토교통부", "sentiment": "부정"}, {"id": "44da268ff4", "date": "2026-06-25", "title": "경찰청 청년 1인 가구 안전망 확보, 사각지대 방치 비판", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=bf5e05eeb203", "code": "Ⅲ-3-3-(4)", "field": "주거", "dept": "경찰청", "sentiment": "부정"}, {"id": "e2881a8ccc", "date": "2026-06-25", "title": "대학생 주거부담 경감 예산 조기 소진에 “신청도 못 했다” 청년 불만", "source": "이데일리", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=939a4cedec8d", "code": "Ⅲ-1-2-(1)", "field": "주거", "dept": "교육부", "sentiment": "부정"}, {"id": "e978f1941d", "date": "2026-06-25", "title": "아르코 청년 예술가 지원 예산 조기 소진에 “신청도 못 했다” 청년 불만", "source": "정책브리핑", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=002caab269cc", "code": "Ⅳ-4-2-(6)", "field": "금융·복지·문화", "dept": "문화체육관광부", "sentiment": "부정"}, {"id": "a16a5d6edc", "date": "2026-06-25", "title": "청년 생애 첫 국민연금 보험료 지원 집행률 저조… 실적 부진 도마 위", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=48030873d0b3", "code": "Ⅳ-4-5-(2)", "field": "금융·복지·문화", "dept": "보건복지부", "sentiment": "부정"}, {"id": "fc4db235ea", "date": "2026-06-25", "title": "문화예술기관연수단원지원 확대 개편… 지원 대상 2배로", "source": "뉴시스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=8f62bc46b555", "code": "Ⅰ-1-3-(37)", "field": "일자리", "dept": "문화체육관광부", "sentiment": "긍정"}, {"id": "44ed4b4401", "date": "2026-06-25", "title": "전세보증금반환보증 보증료 지원, 청년 체감도 개선 효과 확인", "source": "한겨레", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=c5a8389757a1", "code": "Ⅲ-3-1-(3)", "field": "주거", "dept": "국토교통부", "sentiment": "긍정"}, {"id": "b91e767bb7", "date": "2026-06-25", "title": "문화체육관광부 “K-글로벌 방송영상콘텐츠 교육과정 운영 성과 가시화”… 청년 만족도 상승", "source": "한겨레", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=70a229fc9b3d", "code": "Ⅳ-4-1-(4)", "field": "금융·복지·문화", "dept": "문화체육관광부", "sentiment": "긍정"}, {"id": "dab3e00b6a", "date": "2026-06-25", "title": "게임인재원 운영, 청년 체감도 개선 효과 확인", "source": "연합뉴스", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=da50ad3da87d", "code": "Ⅳ-4-1-(6)", "field": "금융·복지·문화", "dept": "문화체육관광부", "sentiment": "긍정"}, {"id": "6bb10bd859", "date": "2026-06-25", "title": "국무조정실 “온라인 통합 청년정책플랫폼 성과 가시화”… 청년 만족도 상승", "source": "뉴스1", "url": "https://www.korea.kr/news/policyNewsView.do?newsId=9a6cd0505379", "code": "Ⅴ-2-1-(1)", "field": "참여·권리", "dept": "국무조정실", "sentiment": "긍정"}]};
+/* ===== 정책 레이더 데이터 (지난 1년 아카이브; 운영 시 news_archive.json fetch로 교체) ===== */
+let ARCHIVE = {"meta": {"generated": "2026-06-27", "total": 0, "demo_backfill": false, "sources": ["네이버 뉴스 API", "정책브리핑(korea.kr)", "연합뉴스 RSS"]}, "items": []};
 let sentSel='';
+let period='day';
+const P_DAYS={day:1,week:7,month:30,year:365};
+const P_LBL={day:'어제',week:'최근 7일',month:'최근 30일',year:'최근 1년'};
+const P_KPI={day:'어제 수집',week:'주간 수집',month:'월간 수집',year:'연간 수집'};
+const SENT_C={'긍정':'#2E8B6F','중립':'#8A93A0','부정':'#E85A3C'};
+
+function anchorDate(){
+  const ds=(ARCHIVE.items||[]).map(i=>i.date);
+  return ds.length?ds.reduce((a,b)=>a>b?a:b):new Date(Date.now()-864e5).toISOString().slice(0,10);
+}
+function rangeFor(p,anchor){
+  const end=anchor;
+  const d=new Date(anchor+'T00:00:00'); d.setDate(d.getDate()-(P_DAYS[p]-1));
+  return {start:d.toISOString().slice(0,10),end};
+}
+function itemsIn(s,e){return (ARCHIVE.items||[]).filter(i=>i.date>=s&&i.date<=e);}
+function periodData(){
+  const anchor=anchorDate(); const {start,end}=rangeFor(period,anchor);
+  const all=itemsIn(start,end);
+  return {anchor,start,end,all,news:all.filter(i=>!i.is_new),newpol:all.filter(i=>i.is_new)};
+}
+function fmtMD(d){const p=d.split('-');return `${+p[1]}.${+p[2]}`;}
 
 async function loadDaily(){
-  try{
-    const r=await fetch('./daily_news.json?t='+Date.now(),{cache:'no-store'});
-    if(r.ok){const j=await r.json(); if(j&&j.items){DAILY=j;}}
-  }catch(e){/* 데모: 임베드 데이터 사용 */}
+  try{const r=await fetch('./news_archive.json?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){const j=await r.json(); if(j&&j.items){ARCHIVE=j; return;}}}catch(e){}
+  try{const r=await fetch('./daily_news.json?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){const j=await r.json(); if(j&&j.items){ARCHIVE={meta:j.meta,items:j.items};}}}catch(e){}
 }
 
-const SENT_C={'긍정':'#2E8B6F','중립':'#8A93A0','부정':'#E85A3C'};
+function buildSummary(d){
+  const {news,newpol,start}=d;
+  const sc={긍정:0,중립:0,부정:0}; news.forEach(i=>sc[i.sentiment]++);
+  const N=news.length||1, pct=s=>Math.round(sc[s]/N*100);
+  const fcnt={},fneg={};
+  news.forEach(i=>{fcnt[i.field]=(fcnt[i.field]||0)+1; if(i.sentiment==='부정')fneg[i.field]=(fneg[i.field]||0)+1;});
+  let tF='-',tR=0; Object.keys(fneg).forEach(f=>{const r=fneg[f]/(fcnt[f]||1); if(fneg[f]>=2&&r>tR){tR=r;tF=f;}});
+  const dneg={}; news.forEach(i=>{if(i.sentiment==='부정')dneg[i.dept]=(dneg[i.dept]||0)+1;});
+  const tDept=Object.entries(dneg).sort((a,b)=>b[1]-a[1])[0];
+  const cneg={}; news.forEach(i=>{if(i.sentiment==='부정'&&i.code)cneg[i.code]=(cneg[i.code]||0)+1;});
+  const tCode=Object.entries(cneg).sort((a,b)=>b[1]-a[1])[0];
+  // 직전 동기간 대비
+  const pe=new Date(start+'T00:00:00'); pe.setDate(pe.getDate()-1);
+  const peS=pe.toISOString().slice(0,10);
+  const ps=new Date(peS+'T00:00:00'); ps.setDate(ps.getDate()-(P_DAYS[period]-1));
+  const prev=itemsIn(ps.toISOString().slice(0,10),peS).filter(i=>!i.is_new);
+  const prevNeg=prev.filter(i=>i.sentiment==='부정').length;
+  const pts=[];
+  pts.push(`${P_LBL[period]} 청년정책 뉴스 <b>${news.length}건</b> 수집 — 긍정 <span class="pos">${pct('긍정')}%</span> · 부정 <span class="neg">${pct('부정')}%</span> · 중립 ${pct('중립')}%`);
+  if(tF!=='-')pts.push(`부정 뉴스가 <b>${tF}</b> 분야에 집중(해당 분야 부정 비중 ${Math.round(tR*100)}%) — 청년 체감도 저하 신호로 모니터링 강화 필요`);
+  if(tDept){const tcName=tCode?((news.find(i=>i.code===tCode[0])||{}).title||'').slice(0,20):'';
+    pts.push(`부정 뉴스 최다 부처는 <b>${tDept[0]}</b>(${tDept[1]}건)${tcName?`, 과제 단위로는 「${tcName}…」 등에 반복 제기`:''}`);}
+  if(newpol.length)pts.push(`기존 374과제 외 <b>신규 정책 ${newpol.length}건</b> 포착 — 대표: ${newpol[0].title}`);
+  if(prev.length){const diff=sc.부정-prevNeg; const w=diff>0?'neg':'pos'; const word=diff>0?'증가':(diff<0?'감소':'유지');
+    pts.push(`직전 동기간(부정 ${prevNeg}건) 대비 부정 뉴스 <span class="${w}">${Math.abs(diff)}건 ${word}</span>`);}
+  return pts.slice(0,5);
+}
+
+function renderTrend(d){
+  let buckets=[];
+  if(period==='year'){
+    const m={}; d.news.forEach(i=>{const k=i.date.slice(0,7);(m[k]=m[k]||{긍정:0,중립:0,부정:0})[i.sentiment]++;});
+    buckets=Object.keys(m).sort().map(k=>({label:(+k.slice(5,7))+'월',...m[k]}));
+    $('trendTitle').textContent='월별 수집·감성 추이';
+  }else{
+    const m={}; d.news.forEach(i=>{(m[i.date]=m[i.date]||{긍정:0,중립:0,부정:0})[i.sentiment]++;});
+    const days=[]; let c=new Date(d.start+'T00:00:00'), e=new Date(d.end+'T00:00:00');
+    while(c<=e){const k=c.toISOString().slice(0,10); days.push(k); c.setDate(c.getDate()+1);}
+    buckets=days.map(k=>({label:fmtMD(k),...(m[k]||{긍정:0,중립:0,부정:0})}));
+    $('trendTitle').textContent='일자별 수집·감성 추이';
+  }
+  if(CH.trend)CH.trend.destroy();
+  CH.trend=new Chart($('cTrend'),{type:'bar',
+    data:{labels:buckets.map(b=>b.label),datasets:[
+      {label:'긍정',data:buckets.map(b=>b.긍정),backgroundColor:'#2E8B6F',stack:'s'},
+      {label:'중립',data:buckets.map(b=>b.중립),backgroundColor:'#8A93A0',stack:'s'},
+      {label:'부정',data:buckets.map(b=>b.부정),backgroundColor:'#E85A3C',stack:'s'}]},
+    options:{plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:period==='month'?16:12}},
+        y:{stacked:true,grid:{color:css('--line2')},ticks:{font:{family:MONO},precision:0}}},animation:{duration:400}}});
+}
+
 function renderM6(){
-  const m=DAILY.meta;
-  $('d1').innerHTML=fmt(m.collected)+'<span class="u">건</span>';
-  $('d1s').textContent=(DAILY.meta.demo?'데모 데이터 · ':'')+'최근 3일 매칭';
-  $('d2').innerHTML=m.sentiment.긍정+'<span class="u">건</span>';
-  $('d3').innerHTML=m.sentiment.부정+'<span class="u">건</span>';
-  $('d4').innerHTML=m.new_count+'<span class="u">건</span>';
-  $('d5').innerHTML=(DAILY.watch||[]).length+'<span class="u">개</span>';
-  $('dailyBrief').textContent=DAILY.brief||'';
-  $('dailySrc').textContent='수집원: '+(m.sources||[]).join(' · ')+(m.demo?'  ·  ※ 본 화면은 시연용 예시 데이터 (운영 시 collect_news.py가 매일 자동 갱신)':'');
+  const d=periodData();
+  $('rngLbl').textContent=`${fmtMD(d.start)} ~ ${fmtMD(d.end)} · 총 ${d.all.length}건`;
+  $('summaryTitle').textContent=`${P_LBL[period]} 핵심 요약`;
+  $('summaryList').innerHTML=buildSummary(d).map(p=>`<li>${p}</li>`).join('');
+  const demo=ARCHIVE.meta&&ARCHIVE.meta.demo_backfill;
+  $('dailySrc').innerHTML='수집원: '+((ARCHIVE.meta&&ARCHIVE.meta.sources)||['네이버 뉴스 API','정책브리핑']).join(' · ')+(demo?'  ·  ※ 과거 구간은 시연용 예시 데이터입니다(네이버 검색 API는 1년 소급 불가 — 운영 시 매일 자동 누적/빅카인즈 백필).':'');
 
-  // 신규 정책
-  const np=DAILY.new_policies||[];
-  $('newPolWrap').style.display=np.length?'':'none';
-  $('newPolList').innerHTML=np.map(p=>`<div class="npol"><span class="nb">NEW</span>
-    <div><div class="npol-tt">${p.title}</div>
-    <div class="npol-mt">${p.dept} · ${p.field} · ${p.date}${p.summary?' — '+p.summary:''}</div></div></div>`).join('');
+  const sc={긍정:0,중립:0,부정:0}; d.news.forEach(i=>sc[i.sentiment]++);
+  $('d1l').textContent=P_KPI[period];
+  $('d1').innerHTML=fmt(d.news.length)+'<span class="u">건</span>';
+  $('d2').innerHTML=fmt(sc.긍정)+'<span class="u">건</span>';
+  $('d3').innerHTML=fmt(sc.부정)+'<span class="u">건</span>';
+  $('d4').innerHTML=d.newpol.length+'<span class="u">건</span>';
+  const cneg={}; d.news.forEach(i=>{if(i.sentiment==='부정'&&i.code)cneg[i.code]=(cneg[i.code]||0)+1;});
+  const watch=Object.entries(cneg).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([code,neg])=>{
+    const it=d.news.find(i=>i.code===code&&i.sentiment==='부정')||d.news.find(i=>i.code===code)||{};
+    return {code,neg,name:(it.title||code).slice(0,26),dept:it.dept||'',field:it.field||''};});
+  $('d5').innerHTML=watch.length+'<span class="u">개</span>';
 
-  // 분야별 감성 stacked
+  $('newPolWrap').style.display=d.newpol.length?'':'none';
+  $('newPolList').innerHTML=d.newpol.slice(0,10).map(p=>`<div class="npol"><span class="nb">NEW</span>
+    <div><div class="npol-tt">${p.title}</div><div class="npol-mt">${p.dept} · ${p.field} · ${p.date}${p.summary?' — '+p.summary:''}</div></div></div>`).join('');
+
+  $('trendWrap').style.display = period==='day' ? 'none' : '';
+  if(period!=='day') renderTrend(d);
+
   const fields=['일자리','교육·직업훈련','주거','금융·복지·문화','참여·권리'];
   const cnt={};fields.forEach(f=>cnt[f]={긍정:0,중립:0,부정:0});
-  (DAILY.items||[]).forEach(i=>{if(cnt[i.field])cnt[i.field][i.sentiment]++;});
+  d.news.forEach(i=>{if(cnt[i.field])cnt[i.field][i.sentiment]++;});
+  $('sentSub').textContent=`${P_LBL[period]} · 긍정/중립/부정`;
   if(CH.sent)CH.sent.destroy();
   CH.sent=new Chart($('cSent'),{type:'bar',plugins:[ChartDataLabels],
     data:{labels:fields,datasets:[
@@ -445,23 +566,25 @@ function renderM6(){
       scales:{x:{stacked:true,grid:{color:css('--line2')},ticks:{font:{family:MONO},precision:0}},
         y:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'600'}}}},animation:{duration:500}}});
 
-  // 주의 리스트
-  $('watchList').innerHTML=(DAILY.watch||[]).map(w=>`<div class="watch-it">
+  $('watchList').innerHTML=watch.map(w=>`<div class="watch-it">
     <div><div class="watch-nm">${w.name}</div><div class="watch-mt">${w.dept} · ${w.field}</div></div>
     <div class="watch-n">${w.neg}<small> 건</small></div></div>`).join('')||'<div style="color:var(--muted);font-size:12px;padding:8px 0">부정 뉴스 집중 과제 없음</div>';
 
   renderFeed();
 }
 function renderFeed(){
-  let its=(DAILY.items||[]);
+  const d=periodData();
+  let its=d.news;
   if(fieldSel)its=its.filter(i=>i.field===fieldSel);
   if(sentSel)its=its.filter(i=>i.sentiment===sentSel);
-  $('feedList').innerHTML=its.map(i=>`<div class="feed-it">
+  const total=its.length, cap=120, shown=its.slice(0,cap);
+  $('feedList').innerHTML=shown.map(i=>`<div class="feed-it">
     <div class="feed-s ${i.sentiment}"></div>
     <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${i.title}<span class="ext">↗</span></a>`:`<div class="feed-tt">${i.title}</div>`}
       <div class="feed-mt"><span class="schip ${i.sentiment}">${i.sentiment}</span>
         <span class="fld">${i.field}</span><span>${i.dept}</span><span>${i.source}</span><span>${i.date}</span></div></div></div>`).join('')
-    ||'<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';
+    + (total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건 — 기간·분야·감성 필터로 좁혀 보세요</div>`:'')
+    || '<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';
 }
 
 /* ===== 데이터 (실데이터 + 시연 예시 평가 레이어) ===== */
@@ -716,6 +839,12 @@ async function init(){
     sentSel=b.dataset.s;
     document.querySelectorAll('#sentFilter button').forEach(x=>x.classList.toggle('on',x===b));
     renderFeed();
+  });
+  // 기간 탭 (일/주/월/연)
+  document.querySelectorAll('#periodNav button').forEach(b=>b.onclick=()=>{
+    period=b.dataset.p;
+    document.querySelectorAll('#periodNav button').forEach(x=>x.classList.toggle('on',x===b));
+    renderM6();
   });
   $('foot').innerHTML=`<b>${DATA.meta.project}</b> · 발주: ${DATA.meta.client} · 분석 과제 ${DATA.meta.n_tasks}개 / 소관부처 ${DATA.meta.n_dept}개 · 데이터 기준일 ${DATA.meta.updated}<br>
     과제·예산·정책대상은 2026년 청년정책 시행계획 과제카드 전수 NLP 구조화 결과 · 평가점수·등급·청년체감지수·일일 레이더는 시연용 예시이며 운영 시 매일 자동 갱신됩니다. · (주)서던포스트`;
