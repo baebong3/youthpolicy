@@ -184,6 +184,9 @@ a.feed-tt:hover .ext{color:var(--coral)}
 .npol-mt{font-size:11px;color:var(--ink2);margin-top:3px}
 .npol-lk{font-size:10.5px;font-weight:600;color:var(--coral-d);text-decoration:none;margin-left:6px;white-space:nowrap}
 .npol-lk:hover{text-decoration:underline}
+.morebtn{display:block;width:100%;margin-top:6px;padding:9px;background:var(--bg);border:1px solid var(--line);border-radius:9px;
+  font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s}
+.morebtn:hover{background:var(--coral-s);color:var(--coral-d);border-color:#F3CFC4}
 .watch-it{display:grid;grid-template-columns:1fr 60px;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2)}
 .watch-it:last-child{border-bottom:none}
 .watch-nm{font-size:12px;font-weight:600;color:var(--ink)}
@@ -211,6 +214,19 @@ a.feed-tt:hover .ext{color:var(--coral)}
   .tbl-wrap{overflow-x:visible}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* 중앙/지자체 토글 */
+.vtoggle-bar{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:19}
+.vtoggle-in{max-width:1200px;margin:0 auto;padding:10px 20px}
+.vtoggle{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px}
+.vtoggle button{font-family:var(--sans);font-size:13px;font-weight:700;padding:8px 18px;border:none;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:-.01em}
+.vtoggle button span{font-weight:500;font-size:11px;opacity:.8;margin-left:6px}
+.vtoggle button:hover{color:var(--ink2)}
+.vtoggle button.on{background:var(--navy);color:#fff;box-shadow:0 1px 3px rgba(22,32,44,.15)}
+.lsearch{font-family:var(--sans);font-size:12.5px;padding:8px 13px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);width:220px;outline:none;transition:border-color .15s}
+.lsearch:focus{border-color:var(--coral)}
+.lsearch::placeholder{color:var(--muted)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--coral-d)}
 </style>
 </head>
 <body>
@@ -229,7 +245,16 @@ a.feed-tt:hover .ext{color:var(--coral)}
   </div>
 </header>
 
-<nav class="fb">
+<div class="vtoggle-bar">
+  <div class="vtoggle-in">
+    <div class="vtoggle" id="viewToggle">
+      <button data-v="central" class="on">중앙행정기관 <span>48개 부처 · 375과제</span></button>
+      <button data-v="local">지자체 <span>17개 시·도 · 1,563과제</span></button>
+    </div>
+  </div>
+</div>
+
+<nav class="fb" id="centralNav">
   <div class="fb-in">
     <div class="seg" id="modNav">
       <button data-m="1" class="on">① 전체 현황판</button>
@@ -246,6 +271,7 @@ a.feed-tt:hover .ext{color:var(--coral)}
 </nav>
 
 <main class="wrap">
+  <div id="centralView">
   <div class="note">
     <span class="tag real">실데이터</span>과제·분야·소관부처·정책대상·예산 = <b>2026년 중앙행정기관 청년정책 시행계획</b> 과제카드 375개 전수(NLP 구조화).
     <span class="tag">시연 예시</span>평가점수·등급·청년체감지수·괴리율은 <b>본 용역 수행 후 산출되는 결과물</b>로, 현재는 프레임워크 구동을 보여주기 위한 시뮬레이션(예시) 값입니다.
@@ -268,11 +294,11 @@ a.feed-tt:hover .ext{color:var(--coral)}
     <div class="grid g-21">
       <div class="card">
         <div class="card-hd"><div><div class="eyebrow">분야 구성</div><div class="ctitle">분야별 과제 수</div><div class="csub">청년기본법 5대 영역 · 과제카드 분류 기준</div></div></div>
-        <div class="chwrap" style="height:300px"><canvas id="cField"></canvas></div>
+        <div class="chwrap" style="height:330px"><canvas id="cField"></canvas></div>
       </div>
       <div class="card">
         <div class="card-hd"><div><div class="eyebrow">평가 결과</div><div class="ctitle">종합 등급 분포</div><div class="csub">추진성과(70) + 청년참여·소통(30) 합산 기준</div></div></div>
-        <div class="chwrap" style="height:300px"><canvas id="cGrade"></canvas></div>
+        <div class="chwrap" style="height:330px"><canvas id="cGrade"></canvas></div>
       </div>
     </div>
 
@@ -432,18 +458,73 @@ a.feed-tt:hover .ext{color:var(--coral)}
 
     <div class="card">
       <div class="card-hd"><div><div class="eyebrow">정책별 뉴스 피드</div><div class="ctitle">과제 매칭 뉴스 타임라인</div><div class="csub">상단 분야 필터 연동 · 색=감성 · 제목 클릭 시 기사 원문(새 탭)</div></div>
-        <div class="miniseg" id="sentFilter"><button data-s="" class="on">전체</button><button data-s="긍정">긍정</button><button data-s="부정">부정</button><button data-s="중립">중립</button></div></div>
+        <div class="miniseg" id="sentFilter"><button data-s="">전체</button><button data-s="긍정" class="on">긍정</button><button data-s="부정">부정</button><button data-s="중립">중립</button></div></div>
       <div id="feedList" style="max-height:520px;overflow-y:auto"></div>
     </div>
   </section>
 
   <div class="foot" id="foot"></div>
+  </div><!-- /centralView -->
+
+  <!-- ============ 지자체 뷰 ============ -->
+  <div id="localView" class="hide">
+    <div class="note" style="border-left-color:var(--navy)">
+      <span class="tag real">실데이터</span>17개 광역지자체 <b>2026년 청년정책 시행계획</b> 전수 판독 · 공통 지표(총 과제수 · 청년기본법 5대 분야별 과제수). 합계=분야합 검증 완료(울산은 세부계획 카운트, 분야합 95/공식 96).
+    </div>
+
+    <div class="kpis" id="lkpis" style="grid-template-columns:repeat(5,1fr)"></div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-hd"><div><div class="eyebrow">규모 비교</div><div class="ctitle">시·도별 청년정책 과제 수</div>
+        <div class="csub">2026년 시행계획 과제(사업) 수 · 내림차순 · 특·광역시·세종(코랄) vs 도(네이비)</div></div>
+        <div class="legbox"><span class="lg"><i style="background:var(--coral)"></i>특·광역시·세종</span><span class="lg"><i style="background:var(--navy)"></i>도</span></div></div>
+      <div class="chwrap" style="height:430px"><canvas id="lTotal"></canvas></div>
+    </div>
+
+    <div class="grid g-21">
+      <div class="card">
+        <div class="card-hd"><div><div class="eyebrow">분야 구성</div><div class="ctitle">시·도별 5대 분야 과제 수</div>
+          <div class="csub">청년기본법 5대 영역 누적</div></div>
+          <div class="legbox" id="lstackLeg"></div></div>
+        <div class="chwrap" style="height:540px"><canvas id="lStack"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div><div class="eyebrow">전체 분야 비중</div><div class="ctitle">5대 분야 합계 구성</div>
+          <div class="csub">17개 시·도 합산</div></div></div>
+        <div class="chwrap" style="height:300px"><canvas id="lDonut"></canvas></div>
+        <div id="lDonutLeg" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div><div class="eyebrow">데이터 · 검색</div><div class="ctitle">시·도 × 분야 과제 수 매트릭스</div>
+        <div class="csub">시·도명 검색 · 헤더 클릭 시 정렬 · 단위: 개</div></div>
+        <input id="lSearch" class="lsearch" placeholder="시·도 검색 (예: 경기, 서울)" autocomplete="off"></div>
+      <div style="overflow-x:auto"><table id="lTbl"></table></div>
+    </div>
+
+    <div class="foot" id="lfoot"></div>
+  </div><!-- /localView -->
 </main>
 
 <script>
 /* ===== 정책 레이더 데이터 (지난 1년 아카이브; 운영 시 news_archive.json fetch로 교체) ===== */
 let ARCHIVE = {"meta": {"generated": "2026-06-27", "total": 0, "demo_backfill": false, "sources": ["네이버 뉴스 API", "정책브리핑(korea.kr)", "연합뉴스 RSS"]}, "items": []};
-let sentSel='';
+let sentSel='긍정';
+let npolAll=[], npolShowAll=false;
+const NPOL_INIT=5;
+function renderNewpol(){
+  const list = npolShowAll ? npolAll : npolAll.slice(0, NPOL_INIT);
+  const cards = list.map(p=>{
+    const meta=[(p.dept&&p.dept!=='null')?p.dept:null,(p.field&&p.field!=='null')?p.field:'시행계획 외 신규',p.source,p.date].filter(Boolean).join(' · ');
+    const link=p.url?` <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="npol-lk">원문 ↗</a>`:'';
+    return `<div class="npol"><span class="nb">NEW</span>
+    <div><div class="npol-tt">${p.title}${link}</div><div class="npol-mt">${meta}${p.summary?' — '+p.summary:''}</div></div></div>`;}).join('');
+  const more = npolAll.length>NPOL_INIT
+    ? `<button class="morebtn" id="npolMore">${npolShowAll?'접기 ▲':`더보기 (+${npolAll.length-NPOL_INIT}건) ▼`}</button>` : '';
+  $('newPolList').innerHTML = cards + more;
+  const mb=$('npolMore'); if(mb) mb.onclick=()=>{ npolShowAll=!npolShowAll; renderNewpol(); };
+}
 let period='day';
 const P_DAYS={day:1,week:7,month:30,year:365};
 const P_LBL={day:'어제',week:'최근 7일',month:'최근 30일',year:'최근 1년'};
@@ -493,7 +574,7 @@ function buildSummary(d){
   const prev=itemsIn(ps.toISOString().slice(0,10),peS).filter(i=>!i.is_new);
   const prevNeg=prev.filter(i=>i.sentiment==='부정').length;
   const pts=[];
-  pts.push(`${P_LBL[period]} 청년정책 뉴스 <b>${news.length}건</b> 수집 — 긍정 <span class="pos">${pct('긍정')}%</span> · 부정 <span class="neg">${pct('부정')}%</span> · 중립 ${pct('중립')}%`);
+  pts.push(`${P_LBL[period]} 청년정책 뉴스 <b>${fmt(news.length)}건</b> 수집 — 긍정 <span class="pos">${pct('긍정')}%</span> · 부정 <span class="neg">${pct('부정')}%</span> · 중립 ${pct('중립')}%`);
   if(tF!=='-')pts.push(`부정 뉴스가 <b>${tF}</b> 분야에 집중(해당 분야 부정 비중 ${Math.round(tR*100)}%) — 청년 체감도 저하 신호로 모니터링 강화 필요`);
   if(tDept){const tcName=tCode?((news.find(i=>i.code===tCode[0])||{}).title||'').slice(0,20):'';
     pts.push(`부정 뉴스 최다 부처는 <b>${tDept[0]}</b>(${tDept[1]}건)${tcName?`, 과제 단위로는 「${tcName}…」 등에 반복 제기`:''}`);}
@@ -529,7 +610,7 @@ function renderTrend(d){
 
 function renderM6(){
   const d=periodData();
-  $('rngLbl').textContent=`${fmtYMD(d.start)} ~ ${fmtYMD(d.end)} · 총 ${d.all.length}건`;
+  $('rngLbl').textContent=`${fmtYMD(d.start)} ~ ${fmtYMD(d.end)} · 총 ${fmt(d.all.length)}건`;
   $('summaryTitle').textContent=`${P_LBL[period]} 핵심 요약`;
   $('summaryList').innerHTML=buildSummary(d).map(p=>`<li>${p}</li>`).join('');
   const demo=ARCHIVE.meta&&ARCHIVE.meta.demo_backfill;
@@ -548,11 +629,8 @@ function renderM6(){
   $('d5').innerHTML=watch.length+'<span class="u">개</span>';
 
   $('newPolWrap').style.display=d.newpol.length?'':'none';
-  $('newPolList').innerHTML=d.newpol.slice(0,10).map(p=>{
-    const meta=[(p.dept&&p.dept!=='null')?p.dept:null,(p.field&&p.field!=='null')?p.field:'시행계획 외 신규',p.source,p.date].filter(Boolean).join(' · ');
-    const link=p.url?` <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="npol-lk">원문 ↗</a>`:'';
-    return `<div class="npol"><span class="nb">NEW</span>
-    <div><div class="npol-tt">${p.title}${link}</div><div class="npol-mt">${meta}${p.summary?' — '+p.summary:''}</div></div></div>`;}).join('');
+  npolAll=d.newpol; npolShowAll=false;
+  renderNewpol();
 
   $('trendWrap').style.display = period==='day' ? 'none' : '';
   if(period!=='day') renderTrend(d);
@@ -564,12 +642,15 @@ function renderM6(){
   if(CH.sent)CH.sent.destroy();
   CH.sent=new Chart($('cSent'),{type:'bar',plugins:[ChartDataLabels],
     data:{labels:fields,datasets:[
-      {label:'긍정',data:fields.map(f=>cnt[f].긍정),backgroundColor:'#2E8B6F',stack:'s',barThickness:24},
-      {label:'중립',data:fields.map(f=>cnt[f].중립),backgroundColor:'#8A93A0',stack:'s',barThickness:24},
-      {label:'부정',data:fields.map(f=>cnt[f].부정),backgroundColor:'#E85A3C',stack:'s',barThickness:24}]},
-    options:{indexAxis:'y',layout:{padding:{right:34}},plugins:{legend:{display:false},
-      datalabels:{color:'#fff',clip:false,font:{family:MONO,weight:'700',size:10},formatter:v=>v>0?v:''}},
-      scales:{x:{stacked:true,grace:'6%',grid:{color:css('--line2')},ticks:{font:{family:MONO},precision:0}},
+      {label:'긍정',data:fields.map(f=>cnt[f].긍정),backgroundColor:'#2E8B6F',stack:'s',barThickness:24,
+        datalabels:{color:'#fff',anchor:'center',align:'center'}},
+      {label:'중립',data:fields.map(f=>cnt[f].중립),backgroundColor:'#8A93A0',stack:'s',barThickness:24,
+        datalabels:{color:'#fff',anchor:'center',align:'center'}},
+      {label:'부정',data:fields.map(f=>cnt[f].부정),backgroundColor:'#E85A3C',stack:'s',barThickness:24,
+        datalabels:{color:'#C8472A',anchor:'end',align:'right',offset:3,font:{family:MONO,weight:'800',size:11}}}]},
+    options:{indexAxis:'y',layout:{padding:{right:46}},plugins:{legend:{display:false},
+      datalabels:{clip:false,font:{family:MONO,weight:'700',size:10},formatter:v=>v>0?v.toLocaleString('ko-KR'):''}},
+      scales:{x:{stacked:true,grace:'8%',grid:{color:css('--line2')},ticks:{font:{family:MONO},precision:0}},
         y:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'600'}}}},animation:{duration:500}}});
 
   $('watchList').innerHTML=watch.map(w=>`<div class="watch-it">
@@ -631,7 +712,8 @@ function renderM1(){
   CH.field=new Chart($('cField'),{type:'doughnut',plugins:[ChartDataLabels],
     data:{labels:fa.map(f=>f.field),datasets:[{data:fa.map(f=>f.n),
       backgroundColor:fa.map(f=>FIELD_COLOR[f.field]),borderColor:'#fff',borderWidth:2}]},
-    options:{cutout:'58%',plugins:{legend:{position:'right',labels:{font:{size:12},padding:10,usePointStyle:true,pointStyle:'circle'}},
+    options:{cutout:'58%',maintainAspectRatio:false,layout:{padding:{top:6,bottom:6}},
+      plugins:{legend:{position:'right',labels:{font:{size:12.5},padding:13,usePointStyle:true,pointStyle:'circle'}},
       datalabels:{color:'#fff',font:{family:MONO,weight:'700',size:12},formatter:v=>v}},
       animation:{duration:600}}});
 
@@ -641,7 +723,8 @@ function renderM1(){
   CH.grade=new Chart($('cGrade'),{type:'doughnut',plugins:[ChartDataLabels],
     data:{labels:['우수','보통','미흡'],datasets:[{data:[g.우수,g.보통,g.미흡],
       backgroundColor:[GRADE_COLOR.우수,GRADE_COLOR.보통,GRADE_COLOR.미흡],borderColor:'#fff',borderWidth:2}]},
-    options:{cutout:'62%',plugins:{legend:{position:'right',labels:{font:{size:12},padding:12,usePointStyle:true,pointStyle:'circle',
+    options:{cutout:'62%',maintainAspectRatio:false,layout:{padding:{top:6,bottom:6}},
+      plugins:{legend:{position:'right',labels:{font:{size:12.5},padding:14,usePointStyle:true,pointStyle:'circle',
       generateLabels:c=>['우수','보통','미흡'].map((l,i)=>({text:`${l}  ${[g.우수,g.보통,g.미흡][i]}개`,fillStyle:[GRADE_COLOR.우수,GRADE_COLOR.보통,GRADE_COLOR.미흡][i],strokeStyle:'#fff',pointStyle:'circle'}))}},
       datalabels:{color:'#fff',font:{family:MONO,weight:'700',size:13},formatter:v=>v}},animation:{duration:600}}});
 
@@ -699,7 +782,7 @@ function renderM2(){
       {label:'보통',data:fa.map(f=>f.b),backgroundColor:'#2B3A55',stack:'g',barThickness:26},
       {label:'미흡',data:fa.map(f=>f.m),backgroundColor:'#E85A3C',stack:'g',barThickness:26}]},
     options:{indexAxis:'y',plugins:{legend:{display:false},
-      datalabels:{color:'#fff',font:{family:MONO,weight:'700',size:10},formatter:v=>v>0?v:''}},
+      datalabels:{color:'#fff',font:{family:MONO,weight:'700',size:10},formatter:v=>v>0?v.toLocaleString('ko-KR'):''}},
       scales:{x:{stacked:true,grid:{color:css('--line2')},ticks:{font:{family:MONO}}},
         y:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'600'}}}},
       animation:{duration:600}}});
@@ -834,6 +917,89 @@ function render(){
   else if(curMod===5)renderM5();
   else if(curMod===6)renderM6();
 }
+
+/* ===== 지자체 비교 데이터 ===== */
+const SIDO = {"meta": {"fields": ["일자리", "교육·직업훈련", "주거", "금융·복지·문화", "참여·권리"], "total_sido": 17, "total_tasks": 1563, "tasks_with_fields": 1562, "field_agg": {"일자리": 493, "교육·직업훈련": 307, "주거": 163, "금융·복지·문화": 416, "참여·권리": 183}, "source": "2026년 광역지자체 청년정책 시행계획 17종 판독", "note": "울산은 분야 내역이 성과지표 형식이라 세부계획 섹션에서 사업 수를 카운트(분야합 95, 공식 총계 96)."}, "items": [{"sido": "서울", "total": 62, "fields": {"일자리": 18, "교육·직업훈련": 6, "주거": 10, "금융·복지·문화": 18, "참여·권리": 10}, "type": "특광역시", "verified": true}, {"sido": "부산", "total": 104, "fields": {"일자리": 27, "교육·직업훈련": 27, "주거": 13, "금융·복지·문화": 24, "참여·권리": 13}, "type": "특광역시", "verified": true}, {"sido": "대구", "total": 84, "fields": {"일자리": 18, "교육·직업훈련": 27, "주거": 11, "금융·복지·문화": 23, "참여·권리": 5}, "type": "특광역시", "verified": true}, {"sido": "인천", "total": 90, "fields": {"일자리": 31, "교육·직업훈련": 17, "주거": 11, "금융·복지·문화": 21, "참여·권리": 10}, "type": "특광역시", "verified": true}, {"sido": "광주", "total": 94, "fields": {"일자리": 33, "교육·직업훈련": 20, "주거": 9, "금융·복지·문화": 26, "참여·권리": 6}, "type": "특광역시", "verified": true}, {"sido": "대전", "total": 62, "fields": {"일자리": 14, "교육·직업훈련": 10, "주거": 8, "금융·복지·문화": 21, "참여·권리": 9}, "type": "특광역시", "verified": true}, {"sido": "울산", "total": 96, "fields": {"일자리": 15, "교육·직업훈련": 21, "주거": 17, "금융·복지·문화": 25, "참여·권리": 17}, "type": "특광역시", "verified": false}, {"sido": "세종", "total": 73, "fields": {"일자리": 23, "교육·직업훈련": 12, "주거": 6, "금융·복지·문화": 24, "참여·권리": 8}, "type": "특광역시", "verified": true}, {"sido": "경기", "total": 80, "fields": {"일자리": 22, "교육·직업훈련": 16, "주거": 8, "금융·복지·문화": 25, "참여·권리": 9}, "type": "도", "verified": true}, {"sido": "강원", "total": 70, "fields": {"일자리": 25, "교육·직업훈련": 25, "주거": 4, "금융·복지·문화": 11, "참여·권리": 5}, "type": "도", "verified": true}, {"sido": "충북", "total": 85, "fields": {"일자리": 35, "교육·직업훈련": 18, "주거": 6, "금융·복지·문화": 20, "참여·권리": 6}, "type": "도", "verified": true}, {"sido": "충남", "total": 121, "fields": {"일자리": 41, "교육·직업훈련": 22, "주거": 13, "금융·복지·문화": 30, "참여·권리": 15}, "type": "도", "verified": true}, {"sido": "전북", "total": 100, "fields": {"일자리": 28, "교육·직업훈련": 12, "주거": 9, "금융·복지·문화": 40, "참여·권리": 11}, "type": "도", "verified": true}, {"sido": "전남", "total": 84, "fields": {"일자리": 32, "교육·직업훈련": 16, "주거": 6, "금융·복지·문화": 16, "참여·권리": 14}, "type": "도", "verified": true}, {"sido": "경북", "total": 112, "fields": {"일자리": 39, "교육·직업훈련": 20, "주거": 7, "금융·복지·문화": 31, "참여·권리": 15}, "type": "도", "verified": true}, {"sido": "경남", "total": 145, "fields": {"일자리": 58, "교육·직업훈련": 23, "주거": 13, "금융·복지·문화": 33, "참여·권리": 18}, "type": "도", "verified": true}, {"sido": "제주", "total": 101, "fields": {"일자리": 34, "교육·직업훈련": 15, "주거": 12, "금융·복지·문화": 28, "참여·권리": 12}, "type": "도", "verified": true}]};
+let lSort={key:'total',dir:-1}, lQuery='';
+const LFC={'일자리':'#E85A3C','교육·직업훈련':'#2B3A55','주거':'#C98A2E','금융·복지·문화':'#2E8B6F','참여·권리':'#6B7A8F'};
+const LF=SIDO.meta.fields;
+
+function renderLocal(){
+  const items=SIDO.items, F=LF;
+  // KPI
+  const totals=items.map(i=>i.total);
+  const avg=Math.round(totals.reduce((a,b)=>a+b,0)/totals.length);
+  const mx=items.reduce((a,b)=>a.total>b.total?a:b), mn=items.reduce((a,b)=>a.total<b.total?a:b);
+  $('lkpis').innerHTML=[
+   ['k2','분석 시·도',SIDO.meta.total_sido,'개','광역지자체 전수'],
+   ['k3','총 과제 수',fmt(SIDO.meta.total_tasks),'개','17개 시·도 합계'],
+   ['','시·도 평균',avg,'개','과제/시도'],
+   ['k5','최다',mx.total,'개',mx.sido],
+   ['k4','최소',mn.total,'개',mn.sido],
+  ].map(k=>`<div class="kpi ${k[0]}"><div class="kpi-lbl">${k[1]}</div><div class="kpi-val">${k[2]}<span class="u">${k[3]}</span></div><div class="kpi-sub">${k[4]}</div></div>`).join('');
+
+  // 총 과제수 막대(정렬)
+  const sorted=items.slice().sort((a,b)=>b.total-a.total);
+  if(CH.lTotal)CH.lTotal.destroy();
+  CH.lTotal=new Chart($('lTotal'),{type:'bar',plugins:[ChartDataLabels],
+    data:{labels:sorted.map(i=>i.sido),datasets:[{data:sorted.map(i=>i.total),
+      backgroundColor:sorted.map(i=>i.type==='도'?'#2B3A55':'#E85A3C'),borderRadius:4,barThickness:19}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,layout:{padding:{right:34}},
+      plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',color:'#5A6473',clip:false,font:{family:MONO,weight:'700',size:11},formatter:(v,c)=>v+(sorted[c.dataIndex].verified?'':'*')}},
+      scales:{x:{grace:'4%',grid:{color:css('--line2')},ticks:{font:{family:MONO}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'600'}}}}}});
+
+  // 분야 stacked
+  const wf=items.slice().sort((a,b)=>b.total-a.total);
+  if(CH.lStack)CH.lStack.destroy();
+  CH.lStack=new Chart($('lStack'),{type:'bar',
+    data:{labels:wf.map(i=>i.sido),datasets:F.map(f=>({label:f,data:wf.map(i=>i.fields[f]),backgroundColor:LFC[f],stack:'s',barThickness:17}))},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index'}},
+      scales:{x:{stacked:true,grid:{color:css('--line2')},ticks:{font:{family:MONO}}},y:{stacked:true,grid:{display:false},ticks:{font:{size:11.5,weight:'600'}}}}}});
+  $('lstackLeg').innerHTML=F.map(f=>`<span class="lg"><i style="background:${LFC[f]}"></i>${f}</span>`).join('');
+
+  // 도넛
+  const agg=SIDO.meta.field_agg, aT=F.reduce((s,f)=>s+agg[f],0);
+  if(CH.lDonut)CH.lDonut.destroy();
+  CH.lDonut=new Chart($('lDonut'),{type:'doughnut',plugins:[ChartDataLabels],
+    data:{labels:F,datasets:[{data:F.map(f=>agg[f]),backgroundColor:F.map(f=>LFC[f]),borderColor:'#fff',borderWidth:2}]},
+    options:{cutout:'60%',maintainAspectRatio:false,plugins:{legend:{display:false},
+      datalabels:{color:'#fff',font:{family:MONO,weight:'700',size:12},formatter:v=>v}}}});
+  $('lDonutLeg').innerHTML=F.map(f=>`<div style="display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0">
+    <i style="width:10px;height:10px;border-radius:3px;background:${LFC[f]}"></i><span style="flex:1">${f}</span>
+    <b style="font-family:${MONO}">${agg[f]}</b><span style="color:var(--muted);font-family:${MONO};width:42px;text-align:right">${(agg[f]/aT*100).toFixed(1)}%</span></div>`).join('');
+
+  renderLTable();
+}
+function renderLTable(){
+  const F=LF, agg=SIDO.meta.field_agg;
+  let rows=SIDO.items.slice();
+  if(lQuery)rows=rows.filter(i=>i.sido.includes(lQuery));
+  rows.sort((a,b)=>{const k=lSort.key; let va= k==='sido'?a.sido:(k==='total'?a.total:a.fields[k]); let vb=k==='sido'?b.sido:(k==='total'?b.total:b.fields[k]);
+    if(k==='sido')return lSort.dir*(va<vb?-1:1); return lSort.dir*(va-vb);});
+  const arrow=k=>lSort.key===k?(lSort.dir<0?' ▼':' ▲'):'';
+  let h=`<thead><tr><th class="sortable" data-k="sido">시·도${arrow('sido')}</th><th class="sortable num" data-k="total">총 과제${arrow('total')}</th>`+
+    F.map(f=>`<th class="sortable num" data-k="${f}">${f}${arrow(f)}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(i=>{h+=`<tr><td>${i.sido}${i.verified?'':' <span class="tag" style="font-size:9px">총계 96</span>'}</td><td class="num">${i.total}</td>`+
+    F.map(f=>`<td class="num">${i.fields[f]}</td>`).join('')+'</tr>';});
+  if(!lQuery)h+=`<tr class="tot" style="font-weight:700;border-top:2px solid var(--navy)"><td>합계</td><td class="num">${fmt(SIDO.meta.total_tasks)}</td>`+F.map(f=>`<td class="num">${agg[f]}</td>`).join('')+'</tr>';
+  h+='</tbody>';
+  $('lTbl').innerHTML=h;
+  document.querySelectorAll('#lTbl th.sortable').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(lSort.key===k)lSort.dir*=-1; else{lSort.key=k;lSort.dir=k==='sido'?1:-1;} renderLTable();});
+}
+
+let curView='central', localInit=false;
+function switchView(v){
+  curView=v;
+  $('centralView').classList.toggle('hide',v!=='central');
+  $('localView').classList.toggle('hide',v!=='local');
+  $('centralNav').style.display = v==='central'?'':'none';
+  document.querySelectorAll('#viewToggle button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('srcBadge').textContent = v==='central'?'시행계획 375과제':'17개 시·도 1,563과제';
+  if(v==='local'){ if(!localInit){renderLocal();localInit=true;} }
+  window.scrollTo(0,0);
+}
+
 async function init(){
   // 분야 필터
   const ff=$('fField');
@@ -854,6 +1020,11 @@ async function init(){
   });
   $('foot').innerHTML=`<b>${DATA.meta.project}</b> · 발주: ${DATA.meta.client} · 분석 과제 ${DATA.meta.n_tasks}개 / 소관부처 ${DATA.meta.n_dept}개 · 데이터 기준일 ${DATA.meta.updated}<br>
     과제·예산·정책대상은 2026년 청년정책 시행계획 과제카드 전수 NLP 구조화 결과 · 평가점수·등급·청년체감지수·일일 레이더는 시연용 예시이며 운영 시 매일 자동 갱신됩니다. · (주)서던포스트`;
+  // 중앙/지자체 토글
+  document.querySelectorAll('#viewToggle button').forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+  // 지자체 검색
+  const ls=$('lSearch'); if(ls)ls.oninput=()=>{lQuery=ls.value.trim();renderLTable();};
+  $('lfoot').innerHTML='출처: 2026년 광역지자체 청년정책 시행계획 17종 · 분야별 총괄표/추진계획 개요 판독 · 합계=분야합 검증(16개), 울산 세부계획 카운트(95/공식 96, *).<br>분야 분류: 청년기본법 5대 영역 기준 통합(참여·기반/관리→참여·권리, 복지·문화→금융·복지·문화). · (주)서던포스트';
   await loadDaily();
   showMod(1);
 }
