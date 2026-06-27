@@ -1,0 +1,12 @@
+﻿# 비밀 키 - 절대 커밋 금지
+.env
+.env.local
+
+# 로컬 DB / 캐시
+news.db
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+.DS_Store
