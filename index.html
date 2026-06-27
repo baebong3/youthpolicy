@@ -248,6 +248,17 @@ th.sortable:hover{color:var(--coral-d)}
 #lTbl .tot .num{font-family:var(--mono)}
 /* 지자체 서브 네비 */
 .lsubnav{margin-bottom:16px}
+/* 가상(예시) 데이터 경고 */
+.simnote{display:flex;gap:11px;align-items:flex-start;background:#FFF8E6;border:1px solid #F2D98E;border-left:4px solid #E0A82E;
+  border-radius:11px;padding:12px 15px;margin-bottom:18px;font-size:12.5px;color:#5C4A1E;line-height:1.55}
+.simnote .sim-ic{font-size:16px;line-height:1.3;color:#C98A00}
+.simnote b{color:#8A6400}
+.sim-chip{display:inline-block;background:#E0A82E;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;vertical-align:1px}
+.simbadge{display:inline-flex;align-items:center;gap:4px;background:#FCEFCB;color:#9A6A00;border:1px solid #ECCB6E;
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:2px;letter-spacing:-.01em;white-space:nowrap}
+.simbadge::before{content:"⚠";font-size:10px}
+.chwrap.simwrap::after{content:"예시 데이터";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);
+  font-family:var(--sans);font-size:30px;font-weight:800;color:rgba(224,168,46,.13);letter-spacing:.05em;pointer-events:none;z-index:5;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -295,7 +306,11 @@ th.sortable:hover{color:var(--coral-d)}
   <div id="centralView">
   <div class="note">
     <span class="tag real">실데이터</span>과제·분야·소관부처·정책대상·예산 = <b>2026년 중앙행정기관 청년정책 시행계획</b> 과제카드 375개 전수(NLP 구조화).
-    <span class="tag">시연 예시</span>평가점수·등급·청년체감지수·괴리율은 <b>본 용역 수행 후 산출되는 결과물</b>로, 현재는 프레임워크 구동을 보여주기 위한 시뮬레이션(예시) 값입니다.
+  </div>
+  <div class="simnote">
+    <span class="sim-ic">⚠</span>
+    <div><b>평가점수·등급(우수·보통·미흡)·청년체감지수·괴리율은 시연용 예시(가상) 데이터입니다.</b>
+    실제 평가 결과는 <b>본 용역 수행 후 산출</b>되며, 아래 <span class="sim-chip">예시</span> 표시가 붙은 카드가 해당됩니다. 과제·부처·분야·예산·뉴스는 모두 실제 데이터입니다.</div>
   </div>
 
   <!-- ============ 모듈 1 : 전체 현황판 ============ -->
@@ -309,7 +324,7 @@ th.sortable:hover{color:var(--coral-d)}
       <div class="kpi k2"><div class="kpi-lbl">소관 부처</div><div class="kpi-val" id="k2">—</div><div class="kpi-sub">중앙행정기관</div></div>
       <div class="kpi k3"><div class="kpi-lbl">2026 정책예산</div><div class="kpi-val" id="k3">—</div><div class="kpi-sub" id="k3s">예산사업 기준</div></div>
       <div class="kpi k4"><div class="kpi-lbl">청년정책평가단</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub">5개 분야 × 50명 (전원 청년)</div></div>
-      <div class="kpi k5"><div class="kpi-lbl">평가 완료율</div><div class="kpi-val" id="k5">—</div><div class="kpi-sub">우수·보통·미흡 산정 완료</div></div>
+      <div class="kpi k5"><div class="kpi-lbl">평가 완료율<span class="simbadge">예시</span></div><div class="kpi-val" id="k5">—</div><div class="kpi-sub">우수·보통·미흡 산정 완료</div></div>
     </div>
 
     <div class="grid g-21">
@@ -318,8 +333,8 @@ th.sortable:hover{color:var(--coral-d)}
         <div class="chwrap" style="height:330px"><canvas id="cField"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-hd"><div><div class="eyebrow">평가 결과</div><div class="ctitle">종합 등급 분포</div><div class="csub">추진성과(70) + 청년참여·소통(30) 합산 기준</div></div></div>
-        <div class="chwrap" style="height:330px"><canvas id="cGrade"></canvas></div>
+        <div class="card-hd"><div><div class="eyebrow">평가 결과</div><div class="ctitle">종합 등급 분포<span class="simbadge">예시 데이터</span></div><div class="csub">추진성과(70) + 청년참여·소통(30) 합산 기준</div></div></div>
+        <div class="chwrap simwrap" style="height:330px"><canvas id="cGrade"></canvas></div>
       </div>
     </div>
 
@@ -338,7 +353,7 @@ th.sortable:hover{color:var(--coral-d)}
   <!-- ============ 모듈 2 : 분야별 성과판 ============ -->
   <section id="mod2" class="hide">
     <div class="modhead">
-      <div class="mt"><span class="ix">2</span>분야별 성과판 · Field Performance</div>
+      <div class="mt"><span class="ix">2</span>분야별 성과판 · Field Performance<span class="simbadge">예시 데이터</span></div>
       <div class="ms">5대 분야 추진성과 / 청년참여·소통 성과 비교 — 행정실적과 청년체감의 괴리를 분야 단위로 진단</div>
     </div>
     <div class="grid g-12">
@@ -383,7 +398,7 @@ th.sortable:hover{color:var(--coral-d)}
   <!-- ============ 모듈 4 : 청년체감 지수판 ============ -->
   <section id="mod4" class="hide">
     <div class="modhead">
-      <div class="mt"><span class="ix">4</span>청년체감 지수판 · Youth Sentiment Matrix</div>
+      <div class="mt"><span class="ix">4</span>청년체감 지수판 · Youth Sentiment Matrix<span class="simbadge">예시 데이터</span></div>
       <div class="ms">행정실적(x) × 청년체감(y) 매트릭스 — 대각선 아래 우하단 = 실적은 높으나 체감이 낮은 ‘우선 개선’ 과제군</div>
     </div>
     <div class="card" style="margin-bottom:14px">
@@ -400,7 +415,7 @@ th.sortable:hover{color:var(--coral-d)}
   <!-- ============ 모듈 5 : 개선 추적판 ============ -->
   <section id="mod5" class="hide">
     <div class="modhead">
-      <div class="mt"><span class="ix">5</span>개선 추적판 · Improvement Tracker</div>
+      <div class="mt"><span class="ix">5</span>개선 추적판 · Improvement Tracker<span class="simbadge">예시 데이터</span></div>
       <div class="ms">미흡 과제의 개선의견서 작성·검토·환류 진행상태를 추적 — 국무조정실 즉시 정책환류용</div>
     </div>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
