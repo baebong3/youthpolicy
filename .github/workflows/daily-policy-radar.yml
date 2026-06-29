@@ -1,14 +1,9 @@
-# .github/workflows/daily-policy-radar.yml
-# 매일 오전 8시(KST) 청년정책 뉴스 자동 수집 → daily_news.json 갱신 → GitHub Pages 자동 반영
-# 저장소 Settings → Secrets and variables → Actions 에 등록 필요:
-#   NAVER_ID, NAVER_SECRET, (선택) ANTHROPIC_API_KEY
-
 name: daily-policy-radar
 
 on:
   schedule:
-    - cron: '0 23 * * *'      # UTC 23:00 = KST 08:00 (전날~당일 새벽 기사 수집)
-  workflow_dispatch:           # 수동 실행 버튼
+    - cron: '0 23 * * *'      # UTC 23:00 = KST 08:00
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,31 +17,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install deps
         run: pip install requests feedparser python-dotenv anthropic
 
-      - name: Collect & classify news
+      - name: Collect central news
         env:
           NAVER_ID: ${{ secrets.NAVER_ID }}
           NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python collect_news.py
+        continue-on-error: true
+
+      - name: Collect local news
+        env:
+          NAVER_ID: ${{ secrets.NAVER_ID }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python collect_local_news.py
+        continue-on-error: true
 
       - name: Commit refreshed data
         run: |
           git config user.name  "policy-radar-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add daily_news.json
+          git add daily_news.json news_archive.json local_news.json
           git diff --cached --quiet || git commit -m "chore: daily news $(date +%F)"
           git pull --no-rebase --no-edit -X ours origin ${{ github.ref_name }} || true
           git push
-
-# index.html 이 같은 저장소 루트의 daily_news.json 을 fetch 하므로,
-# GitHub Pages(Settings → Pages → Source: main / root)만 켜두면
-# 위 커밋이 푸시될 때마다 페이지가 자동으로 최신 데이터를 보여줍니다.
-# 페이지 주소:  https://<깃허브아이디>.github.io/<저장소이름>/index.html
