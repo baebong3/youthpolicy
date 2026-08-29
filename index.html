@@ -295,6 +295,7 @@ th.sortable:hover{color:var(--coral-d)}
       <button data-m="4">④ 청년체감 지수판</button>
       <button data-m="5">⑤ 개선 추적판</button>
       <button data-m="6">⑥ 정책 레이더 리포트</button>
+      <button data-m="7">⑦ 선행연구·근거</button>
     </div>
     <div class="fdiv"></div>
     <span class="fb-lbl">분야</span>
@@ -305,7 +306,7 @@ th.sortable:hover{color:var(--coral-d)}
 <main class="wrap">
   <div id="centralView">
   <div class="note">
-    <span class="tag real">실데이터</span>과제·분야·소관부처·정책대상·예산 = <b>2026년 중앙행정기관 청년정책 시행계획</b> 과제카드 375개 전수(NLP 구조화).
+    <span class="tag real">실데이터</span>과제·분야·소관부처·정책대상·예산 = <b>2026년 중앙행정기관 청년정책 시행계획(확정본)</b> 과제카드 375개 전수(NLP 구조화) · 출처·산정근거·발주 기준 대조는 하단 <b>데이터 출처·정합성</b> 패널.
   </div>
   <div class="simnote">
     <span class="sim-ic">⚠</span>
@@ -499,13 +500,54 @@ th.sortable:hover{color:var(--coral-d)}
     </div>
   </section>
 
+  <!-- ============ 모듈 7 : 선행연구·근거판 ============ -->
+  <section id="mod7" class="hide">
+    <div class="modhead">
+      <div class="mt"><span class="ix">7</span>선행연구·근거판 · Evidence Base</div>
+      <div class="ms">2020년 이후 실태조사·선행연구를 지표 설계·평가 프레임에 연결 — 분석 방법론의 학술적 정당성 근거</div>
+    </div>
+    <div class="note">
+      <span class="tag real">근거</span>본 콘솔의 <b>분야 5분류(청년기본법 영역)·청년체감지수·행정–체감 괴리율·거버넌스 진단</b> 프레임은 아래 2020년 이후 국가승인통계·정부 실태조사·학술연구에 근거합니다. 각 문헌은 대응 모듈에 연결됩니다.
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-hd"><div><div class="eyebrow">Methodology Linkage</div><div class="ctitle">선행근거 → 분석 프레임 연결</div><div class="csub">어떤 실태조사·연구가 어느 지표/모듈을 정당화하는가</div></div></div>
+      <div class="tbl-wrap"><table class="dt" style="min-width:640px">
+        <thead><tr><th class="l">분석 프레임 · 모듈</th><th class="l">핵심 근거 (2020년 이후)</th><th class="l">연결 논거</th></tr></thead>
+        <tbody>
+          <tr><td class="l">① 전체 현황판 · 분야 5분류</td><td class="l">「청년 삶 실태조사」 2022·2024 (국가승인통계 170002호)</td><td class="l">청년기본법 기반 정부 종합 실태조사 문항체계를 시행계획 5대 분야로 매핑</td></tr>
+          <tr><td class="l">② 분야별 성과판</td><td class="l">청년 사회·경제 실태조사 (NYPI, 통계청 승인통계)</td><td class="l">분야별 객관·주관 지표 시계열로 성과 판단 기준 설정</td></tr>
+          <tr><td class="l">④ 청년체감 지수판 · 괴리율</td><td class="l">청년 삶 실태조사 주관지표 · 사회적 고립 척도 연구</td><td class="l">행정 산출과 청년 체감의 간극을 승인통계·검증 척도로 계측</td></tr>
+          <tr><td class="l">③ 부처별 드릴다운 · 전달체계</td><td class="l">청년정책 거버넌스 연구 (오수연 외, 2021)</td><td class="l">부처 분산·중복을 거버넌스·전달체계 관점에서 진단</td></tr>
+          <tr><td class="l">⑤ 개선 추적판</td><td class="l">고립·은둔 청년 실태조사 (2023) 등 정책 반영 사례</td><td class="l">실태조사 → 신규 정책 반영의 환류 경로를 추적 대상으로 설정</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="eyebrow">References · 2020~</div><div class="ctitle">선행 실태조사·연구문헌</div><div class="csub">2020년 이후 · 국가승인통계/정부보고서/KCI 등재 중심 · 제목 클릭 시 원문(새 탭)</div></div></div>
+      <div class="tbl-wrap"><table class="dt" style="min-width:660px">
+        <thead><tr><th class="l">범주</th><th class="l">문헌</th><th class="l">발행처 · 연도</th></tr></thead>
+        <tbody>
+          <tr><td class="l">삶 실태</td><td class="l"><a href="https://www.kihasa.re.kr/publish/report/view?seq=53907" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">2022년 청년 삶 실태조사 (국가승인통계 170002호)</a></td><td class="l">국무조정실·KIHASA · 2023</td></tr>
+          <tr><td class="l">삶 실태</td><td class="l"><a href="https://dl.nanet.go.kr/detail/MONO12025000033176" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">2024년 청년 삶 실태조사 (2차, 15,098명)</a></td><td class="l">국무조정실·KIHASA · 2025</td></tr>
+          <tr><td class="l">삶 실태</td><td class="l"><a href="https://www.nypi.re.kr/repository/handle/2022.oak/3140" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">2021년 청년 사회·경제 실태조사 기초분석보고서</a></td><td class="l">한국청소년정책연구원 · 2021</td></tr>
+          <tr><td class="l">주거</td><td class="l"><a href="https://www.si.re.kr/node/67791" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">2022 서울청년패널 기초분석보고서</a></td><td class="l">서울연구원 · 2022</td></tr>
+          <tr><td class="l">고용·니트</td><td class="l"><a href="https://www.dbpia.co.kr/journal/articleDetail?nodeId=NODE11687887" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">청년 NEET 특성 및 유형 분석 (고용이슈 6월호)</a></td><td class="l">한국고용정보원 · 2022</td></tr>
+          <tr><td class="l">거버넌스</td><td class="l"><a href="https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002795986" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">청년정책 거버넌스 체계 현안 분석과 개선방안 (현대사회와 행정 31-4)</a></td><td class="l">오수연·김성엽·박성민 · 2021</td></tr>
+          <tr><td class="l">거버넌스</td><td class="l"><a href="https://www.si.re.kr/sites/default/files/small%2022-04.pdf" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">청년 정책 거버넌스 활성화 방안 (정책리포트 22-04)</a></td><td class="l">서울연구원 · 2022</td></tr>
+          <tr><td class="l">정신건강·고립</td><td class="l"><a href="https://www.data.go.kr/data/15156074/fileData.do" target="_blank" rel="noopener" style="color:var(--coral-d);font-weight:600">2023년 고립·은둔 청년 실태조사</a></td><td class="l">보건복지부·KIHASA · 2023</td></tr>
+        </tbody>
+      </table></div>
+      <div class="foot" style="margin-top:12px">근거 수준: 국가승인통계·정부 실태조사·KCI 등재 문헌 중심 1차 정리(검증) · 운영본 반영 시 각 문헌의 서지정보(권/호·페이지·DOI)를 원문과 최종 대조 · 범주 분류는 청년기본법 5대 영역 기준.</div>
+    </div>
+  </section>
+
   <div class="foot" id="foot"></div>
   </div><!-- /centralView -->
 
   <!-- ============ 지자체 뷰 ============ -->
   <div id="localView" class="hide">
     <div class="note" style="border-left-color:var(--navy)">
-      <span class="tag real">실데이터</span>17개 광역지자체 <b>2026년 청년정책 시행계획</b> 전수 판독 · 공통 지표(총 과제수 · 청년기본법 5대 분야별 과제수). 합계=분야합 검증 완료(울산은 세부계획 카운트, 분야합 95/공식 96).
+      <span class="tag real">실데이터</span>17개 광역지자체 <b>2026년 청년정책 시행계획(확정본)</b> 전수 판독 · 공통 지표(총 과제수 · 청년기본법 5대 분야별 과제수). 합계=분야합 검증 완료(울산은 세부계획 카운트, 분야합 95/공식 96).
     </div>
 
     <div class="seg lsubnav" id="lsubNav">
@@ -601,6 +643,35 @@ th.sortable:hover{color:var(--coral-d)}
     <div class="foot" id="lfoot2"></div>
     </div><!-- /localRadar -->
   </div><!-- /localView -->
+
+  <!-- ============ 데이터 출처·정합성 (전역) ============ -->
+  <section id="provenance" style="margin-top:8px;padding-top:20px;border-top:2px solid var(--line)">
+    <div class="modhead">
+      <div class="mt"><span class="ix">✓</span>데이터 출처·정합성 · Data Provenance &amp; Reconciliation</div>
+      <div class="ms">모든 정량 지표는 2026년 청년정책 시행계획 원문 전수 판독 기준 — 출처·산정근거·발주 기준 대조 상태 공개</div>
+    </div>
+    <div class="note">
+      <span class="tag real">기준</span>중앙 <b>375과제·48부처</b>, 지자체 <b>1,563과제·17시·도</b>, 예산 태깅 <b>약 29.9조원</b>은 모두 <b>2026년 청년정책 시행계획(청년정책조정위원회 심의·확정본)</b> 과제카드/총괄표 전수 판독 결과입니다. 데이터 기준일: <b id="provDate">—</b>.
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="eyebrow">Reconciliation Ledger</div><div class="ctitle">핵심 수치 · 출처 · 정합성 검증</div><div class="csub">발주(제안요청서) 기준 대조 상태 포함 · ✓ 원문 일치 / △ 발주처 원문 최종대조 대상</div></div></div>
+      <div class="tbl-wrap"><table class="dt" style="min-width:680px">
+        <thead><tr><th class="l">지표</th><th>값</th><th class="l">출처 문서</th><th class="l">정합성 검증</th></tr></thead>
+        <tbody>
+          <tr><td class="l">중앙 과제카드(전수)</td><td><b>375</b></td><td class="l">2026 중앙행정기관 시행계획 과제카드</td><td class="l">✓ 원문 카드 375건 = 구조화 데이터 375행 일치</td></tr>
+          <tr><td class="l">중앙 주요과제(총괄표)</td><td>374</td><td class="l">시행계획 총괄표</td><td class="l">△ 전수 375 대비 1건 차(총괄/중복 카드 추정) — 발주처 원문과 최종 대조</td></tr>
+          <tr><td class="l">소관 부처</td><td><b>48</b></td><td class="l">과제카드 소관기관 필드</td><td class="l">✓ distinct 부처 48개 일치</td></tr>
+          <tr><td class="l">정책예산(태깅)</td><td><b>29.9조</b></td><td class="l">과제카드 예산현액(예산사업 257건)</td><td class="l">✓ 29,906,238백만원 합산 · 비예산 62건 별도</td></tr>
+          <tr><td class="l">지자체 과제</td><td><b>1,563</b></td><td class="l">광역 17종 시행계획</td><td class="l">✓ 분야합=총계 검증(16개) · 울산 세부계획 95/공식 96(*)</td></tr>
+          <tr><td class="l">지자체 분야분류</td><td>1,562</td><td class="l">분야별 총괄표</td><td class="l">△ 미분류 1건 — 원문 분야표기 확인</td></tr>
+          <tr><td class="l">광역지자체</td><td><b>17</b></td><td class="l">시·도 시행계획 17종</td><td class="l">✓ 전 시·도 전수</td></tr>
+        </tbody>
+      </table></div>
+      <div class="foot" style="margin-top:12px">
+        <b>발주 기준 대조 체크리스트</b> — (1) 발주 제안요청서(RFP)의 과제 모집단 정의(전수 375 vs 주요과제 374)와 본 데이터 기준 최종 일치. (2) 부처 수·분야 분류가 발주처 제공 원본과 동일한지 확인. (3) 예산 태깅 기준(본예산/추경·국비/지방비)을 발주 산정기준과 정렬. △ 항목은 운영 착수 시 발주처 원문으로 확정. · 출처: 2026년 청년정책 시행계획(중앙·광역) · (주)서던포스트
+      </div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -1001,11 +1072,12 @@ function renderM5(){
 let curMod=1;
 function showMod(m){
   curMod=m;
-  for(let i=1;i<=6;i++)$('mod'+i).classList.toggle('hide',i!==m);
+  for(let i=1;i<=7;i++)$('mod'+i).classList.toggle('hide',i!==m);
   document.querySelectorAll('#modNav button').forEach(b=>b.classList.toggle('on',+b.dataset.m===m));
   render();
 }
 function render(){
+  if(curMod===7)return;
   if(curMod===1)renderM1();
   else if(curMod===2)renderM2();
   else if(curMod===3)renderM3();
@@ -1232,6 +1304,7 @@ async function init(){
   });
   $('foot').innerHTML=`<b>${DATA.meta.project}</b> · 발주: ${DATA.meta.client} · 분석 과제 ${DATA.meta.n_tasks}개 / 소관부처 ${DATA.meta.n_dept}개 · 데이터 기준일 ${DATA.meta.updated}<br>
     과제·예산·정책대상은 2026년 청년정책 시행계획 과제카드 전수 NLP 구조화 결과 · 평가점수·등급·청년체감지수·일일 레이더는 시연용 예시이며 운영 시 매일 자동 갱신됩니다. · (주)서던포스트`;
+  const _pd=$('provDate'); if(_pd)_pd.textContent=DATA.meta.updated;
   // 중앙/지자체 토글
   document.querySelectorAll('#viewToggle button').forEach(b=>b.onclick=()=>switchView(b.dataset.v));
   // 지자체 검색
