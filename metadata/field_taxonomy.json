@@ -1,0 +1,22 @@
+{
+  "schema": "youthpolicy.field_taxonomy",
+  "version": "v1.0",
+  "updated": "2026-08-31",
+  "note": "5대 분야 정본(코드·명칭). 제안서 3.2 공통 키 스파인·1장 실측 메타데이터와 정합. roman은 시행계획 과제코드(예: Ⅰ-1-1-(1)) 최상위 위계와 일치하며 불변, id는 파일·DB 결합용 ASCII 키.",
+  "source": "tasks.json(code prefix)·youth_policy.json(field_agg)·sido_compare.json(meta.fields)",
+  "fields": [
+    {"id": "F1", "roman": "Ⅰ", "name": "일자리",        "desc": "취업지원·고용·창업 등 청년 노동시장 진입/유지", "central_n": 121, "central_budget_mw": 5123297},
+    {"id": "F2", "roman": "Ⅱ", "name": "교육·직업훈련",  "desc": "직업훈련·역량강화·장학 등 인적자본 형성",       "central_n": 112, "central_budget_mw": 6594882},
+    {"id": "F3", "roman": "Ⅲ", "name": "주거",           "desc": "임대주택·주거비·기숙사 등 청년 주거 안정",       "central_n": 34,  "central_budget_mw": 16661820},
+    {"id": "F4", "roman": "Ⅳ", "name": "금융·복지·문화", "desc": "자산형성·복지급여·마음건강·문화 등 생활 기반",   "central_n": 63,  "central_budget_mw": 1303234},
+    {"id": "F5", "roman": "Ⅴ", "name": "참여·권리",       "desc": "정책참여기구·거버넌스·청년 권리 보장",           "central_n": 45,  "central_budget_mw": 223005}
+  ],
+  "indicators": {
+    "admin": "행정실적 점수(부처 실적보고 기반, source_type=시행계획실측)",
+    "youth": "청년체감 점수(70, source_type=신규정량 + 선행연구2차 baseline)",
+    "part": "참여·소통 점수(30, source_type=신규정량+시행계획실측)",
+    "total": "추진성과 총점(=youth+part, 100)",
+    "gap": "행정–체감 괴리(=admin−youth)",
+    "grade": "총점 기준 3등급(우수/보통/미흡)"
+  }
+}
