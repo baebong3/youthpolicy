@@ -98,6 +98,117 @@ FROM articles a JOIN article_topics t ON t.scope=a.scope AND t.id=a.id
 GROUP BY ym, t.topic;
 """
 
+# ── 삼각검증 스키마 확장(제안서 3.6·6.3) : 기존 스키마 위에 '추가만' ──
+# 네 갈래 출처(시행계획실측·선행연구2차·뉴스·신규정량/정성)를 5대 분야 축에
+# 결선한다. 기존 테이블/뷰는 건드리지 않으며, 모두 IF NOT EXISTS.
+SCHEMA_TRIANGULATION = """
+CREATE TABLE IF NOT EXISTS prior_study (
+  record_id     TEXT PRIMARY KEY,       -- 선행연구2차-{일련}
+  prior_study   TEXT,                   -- 선행연구·국가승인통계명
+  prior_variable TEXT,                  -- 재활용 대상 핵심 변수영역
+  field         TEXT,                   -- 5대 분야
+  new_item_id   TEXT,                   -- 얹히는 신규 문항 ID(Q-분야-nn)
+  indicator     TEXT,                   -- youth / gap / part
+  source_type   TEXT DEFAULT '선행연구2차',
+  method        TEXT DEFAULT '행정자료',
+  unit          TEXT DEFAULT '가구',
+  reuse_tier    TEXT,                   -- ★★★ / ★★☆ / ★☆☆
+  reliability   TEXT DEFAULT '국가승인통계',
+  access        TEXT,                   -- MDIS 등 접근 경로
+  n             INTEGER,
+  value         REAL,                   -- 재활용 baseline 요약값(있으면)
+  period        TEXT,                   -- YYYY / YYYY-MM / wave
+  linkage_key   TEXT,                   -- field×조직×target_p×period(비식별)
+  first_seen    TEXT,
+  version       TEXT DEFAULT 'v1.0',
+  note          TEXT
+);
+CREATE TABLE IF NOT EXISTS survey_item (
+  item_id     TEXT PRIMARY KEY,         -- Q-{분야}-{2자리}
+  field       TEXT,
+  target      TEXT,                     -- 정책대상 세그먼트(target_p 요약)
+  indicator   TEXT,                     -- youth / part
+  scale       TEXT,                     -- 예: 5점 리커트
+  question    TEXT,
+  source_type TEXT DEFAULT '신규정량',
+  method      TEXT DEFAULT '설문',
+  version     TEXT DEFAULT 'v1.0',
+  first_seen  TEXT
+);
+CREATE TABLE IF NOT EXISTS survey_response (
+  record_id   TEXT PRIMARY KEY,         -- 신규정량-{일련}
+  item_id     TEXT,                     -- survey_item.item_id
+  code        TEXT,                     -- 과제코드(시행계획실측 admin과 결합)
+  field       TEXT,
+  target_p    TEXT,                     -- student·income·work·age 요약
+  score       REAL,                     -- 집계 점수 또는 개표 응답값
+  n           INTEGER,
+  unit        TEXT DEFAULT '개인',
+  source_type TEXT DEFAULT '신규정량',
+  method      TEXT DEFAULT '설문',
+  period      TEXT,                      -- YYYY / YYYY-MM / wave
+  linkage_key TEXT,
+  first_seen  TEXT
+);
+CREATE TABLE IF NOT EXISTS qual_finding (
+  finding_id  TEXT PRIMARY KEY,         -- 신규정성-{일련}
+  field       TEXT,
+  target      TEXT,
+  gap_theme   TEXT,                     -- 괴리 원인·주제 코딩 결과
+  code        TEXT,                     -- 과제코드(있으면)
+  variable_id TEXT,                     -- Q-{분야}-nn 결선
+  source_type TEXT DEFAULT '신규정성',
+  method      TEXT DEFAULT 'FGI·심층인터뷰',
+  unit        TEXT DEFAULT '개인',
+  evidence    TEXT,                     -- 근거 인용·메모
+  period      TEXT,
+  linkage_key TEXT,
+  first_seen  TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_prior_field   ON prior_study(field);
+CREATE INDEX IF NOT EXISTS ix_svresp_field  ON survey_response(field);
+CREATE INDEX IF NOT EXISTS ix_svresp_code   ON survey_response(code);
+CREATE INDEX IF NOT EXISTS ix_qual_field    ON qual_finding(field);
+"""
+
+VIEWS_TRIANGULATION = """
+DROP VIEW IF EXISTS v_field_year;
+CREATE VIEW v_field_year AS
+SELECT nz.field, nz.year,
+       nz.news_n, nz.pos, nz.neu, nz.neg,
+       ROUND(100.0*(nz.pos-nz.neg)/nz.news_n, 1) AS nsi,
+       COALESCE(sv.cnt, 0) AS survey_n,
+       COALESCE(ql.cnt, 0) AS qual_n
+FROM (
+    SELECT field, substr(date,1,4) AS year,
+           COUNT(*) AS news_n,
+           SUM(sentiment='긍정') AS pos,
+           SUM(sentiment='중립') AS neu,
+           SUM(sentiment='부정') AS neg
+    FROM articles WHERE field IS NOT NULL
+    GROUP BY field, substr(date,1,4)
+) nz
+LEFT JOIN (
+    SELECT field, substr(period,1,4) AS year, COUNT(*) AS cnt
+    FROM survey_response GROUP BY field, substr(period,1,4)
+) sv ON sv.field=nz.field AND sv.year=nz.year
+LEFT JOIN (
+    SELECT field, substr(COALESCE(period, first_seen),1,4) AS year, COUNT(*) AS cnt
+    FROM qual_finding GROUP BY field, substr(COALESCE(period, first_seen),1,4)
+) ql ON ql.field=nz.field AND ql.year=nz.year;
+
+DROP VIEW IF EXISTS v_field_source;
+CREATE VIEW v_field_source AS
+SELECT field, '뉴스' AS source_type, COUNT(*) AS n
+  FROM articles WHERE field IS NOT NULL GROUP BY field
+UNION ALL
+SELECT field, '선행연구2차', COUNT(*) FROM prior_study     WHERE field IS NOT NULL GROUP BY field
+UNION ALL
+SELECT field, '신규정량',   COUNT(*) FROM survey_response WHERE field IS NOT NULL GROUP BY field
+UNION ALL
+SELECT field, '신규정성',   COUNT(*) FROM qual_finding    WHERE field IS NOT NULL GROUP BY field;
+"""
+
 
 def load_json(name, use_github):
     if use_github:
@@ -110,6 +221,9 @@ def load_json(name, use_github):
 def connect():
     con = sqlite3.connect(DB)
     con.executescript(SCHEMA)
+    # 삼각검증 확장(추가만, 기존 스키마 보존) — 테이블 먼저, 뷰는 그 위에
+    con.executescript(SCHEMA_TRIANGULATION)
+    con.executescript(VIEWS_TRIANGULATION)
     return con
 
 
@@ -267,6 +381,36 @@ def export(args):
     print(f"→ 저장: {os.path.abspath(args.excel)}")
 
 
+def triangulate(args):
+    """v_field_year(분야×연도 삼각검증)를 콘솔 출력. 뉴스 감성 + survey/qual 카운트."""
+    con = connect()
+    rows = con.execute(
+        "SELECT field, year, news_n, pos, neu, neg, nsi, survey_n, qual_n "
+        "FROM v_field_year ORDER BY field, year"
+    ).fetchall()
+    print("\n삼각검증 — 분야×연도 (v_field_year)")
+    print("─" * 88)
+    print(f"{'분야':<14}{'연도':>6}{'뉴스':>8}{'긍정':>7}{'중립':>7}{'부정':>7}"
+          f"{'NSI':>8}{'설문':>7}{'정성':>7}")
+    print("─" * 88)
+    for r in rows:
+        f, y, n, pos, neu, neg, nsi, sv, ql = r
+        print(f"{f:<14}{y:>6}{n:>8,}{pos:>7,}{neu:>7,}{neg:>7,}"
+              f"{(nsi if nsi is not None else 0):>8.1f}{sv:>7,}{ql:>7,}")
+    if not rows:
+        print("(articles 비어 있음 — 먼저 'python news_db.py build' 실행)")
+    print("─" * 88)
+    print("NSI = 100·(긍정−부정)/뉴스건수. 설문/정성은 survey_response·qual_finding 적재 시 증가.")
+    # 분야×출처유형 요약도 함께 노출
+    src = con.execute(
+        "SELECT field, source_type, n FROM v_field_source ORDER BY field, source_type"
+    ).fetchall()
+    if src:
+        print("\n분야×출처유형 (v_field_source)")
+        for f, st, n in src:
+            print(f"  {f:<14} {st:<10} {n:>8,}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="youthpolicy 뉴스 아카이브 DB")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -297,6 +441,9 @@ def main():
     e = sub.add_parser("export", help="엑셀 다중 시트 내보내기")
     e.add_argument("--excel", default="youthpolicy_news.xlsx")
     e.set_defaults(func=export)
+
+    t = sub.add_parser("triangulate", help="분야×연도 삼각검증(v_field_year) 출력")
+    t.set_defaults(func=triangulate)
 
     args = ap.parse_args()
     args.func(args)
