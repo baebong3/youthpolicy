@@ -615,7 +615,7 @@ function renderNewpol(){
     const meta=[(p.dept&&p.dept!=='null')?p.dept:null,(p.field&&p.field!=='null')?p.field:'시행계획 외 신규',p.source,p.date].filter(Boolean).join(' · ');
     const link=p.url?` <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="npol-lk">원문 ↗</a>`:'';
     return `<div class="npol"><span class="nb">NEW</span>
-    <div><div class="npol-tt">${p.title}${link}</div><div class="npol-mt">${meta}${p.summary?' — '+p.summary:''}</div></div></div>`;}).join('');
+    <div><div class="npol-tt">${cnum(p.title)}${link}</div><div class="npol-mt">${meta}${p.summary?' — '+p.summary:''}</div></div></div>`;}).join('');
   const more = npolAll.length>NPOL_INIT
     ? `<button class="morebtn" id="npolMore">${npolShowAll?'접기 ▲':`더보기 (+${npolAll.length-NPOL_INIT}건) ▼`}</button>` : '';
   $('newPolList').innerHTML = cards + more;
@@ -763,7 +763,7 @@ function renderFeed(){
   const total=its.length, cap=120, shown=its.slice(0,cap);
   $('feedList').innerHTML=shown.map(i=>`<div class="feed-it">
     <div class="feed-s ${i.sentiment}"></div>
-    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${i.title}<span class="ext">↗</span></a>`:`<div class="feed-tt">${i.title}</div>`}
+    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${cnum(i.title)}</div>`}
       <div class="feed-mt"><span class="schip ${i.sentiment}">${i.sentiment}</span>
         <span class="fld">${i.field}</span><span>${i.dept}</span><span>${i.source}</span><span>${i.date}</span></div></div></div>`).join('')
     + (total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건 — 기간·분야·감성 필터로 좁혀 보세요</div>`:'')
@@ -781,6 +781,20 @@ const GRADE_COLOR = {'우수':'#2E8B6F','보통':'#2B3A55','미흡':'#E85A3C'};
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+/* 기사 제목 속 네 자리 이상 수치에 천 단위 콤마 (1500명 → 1,500명) · 연도 · 세대(2030) · 날짜 · 전화번호는 그대로 */
+function cnum(t){
+  t=t||'';
+  return t.replace(/(^|[^\d.,\-\/:A-Za-z])(\d{4,})(?![\d,\-\/:A-Za-z]|\.\d)/g,function(m,pre,s,off){
+    if(s[0]==='0')return m;
+    var after=t.slice(off+m.length), n=+s;
+    var g=/^([1-6])0([2-7])0$/.exec(s);
+    if(g&&+g[2]>+g[1]&&!/^\s?(명|원|만|억|조|개|건|곳|가구|호|%)/.test(after))return m;
+    if(/^(년|학년)/.test(after))return m;
+    if(n>=1950&&n<=2100&&!/^\s?(명|원|만|억|조|개|건|곳|가구|호|채|세대|시간|여|대|톤|km|㎡|평|배|회|점|편|권|석|쌍|%|천)/.test(after))return m;
+    return pre+n.toLocaleString('ko-KR');
+  });
+}
+
 const CH={};
 let fieldSel='';
 
@@ -1187,7 +1201,7 @@ function renderLFeed(){
   if(lsent)its=its.filter(i=>i.sentiment===lsent);
   const cap=120,total=its.length,shown=its.slice(0,cap);
   $('lfeedList').innerHTML=shown.map(i=>`<div class="feed-it"><div class="feed-s ${i.sentiment}"></div>
-    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${i.title}<span class="ext">↗</span></a>`:`<div class="feed-tt">${i.title}</div>`}
+    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${cnum(i.title)}</div>`}
       <div class="feed-mt"><span class="schip ${i.sentiment}">${i.sentiment}</span><span class="fld">${i.sido}</span><span>${i.source||''}</span><span>${i.date}</span></div></div></div>`).join('')
     +(total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건</div>`:'')
     ||'<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';

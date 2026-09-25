@@ -296,7 +296,8 @@ def norm(s):
 
 
 def link(r, text=None):
-    return '<a href="%s" target="_blank" rel="noopener">%s</a>' % (esc(r['url']), esc(text or r['title']))
+    """기사 링크 : 제목 · 헤드라인 속 네 자리 이상 수치에는 천 단위 콤마"""
+    return '<a href="%s" target="_blank" rel="noopener">%s</a>' % (esc(r['url']), esc(rules.comma_nums(text or r['title'])))
 
 
 def schip(r):
@@ -578,7 +579,7 @@ def pane(items, track, days, today):
         r = cl[0]
         rep = ' · 대표 기사 %s %s' % (link(r), dt(r['date']))
     o.write('<section class="hero"><div class="eyebrow">%s 오늘의 핵심 이슈 · %s</div><h1>%s</h1><p class="dek">%s%s</p>'
-            % (esc(TRACKS[track]['label']), dt(today_s), esc(head), basis, rep))
+            % (esc(TRACKS[track]['label']), dt(today_s), esc(rules.comma_nums(head)), basis, rep))
     if others:
         o.write('<ul class="also">' + ''.join('<li><b>함께 본 이슈</b>%s <span class="meta">%s건</span></li>'
                                                % (link(a[0], h), fmt(len(a))) for h, a, _ in others if h) + '</ul>')
@@ -680,7 +681,7 @@ def pane(items, track, days, today):
         o.write('<section class="card"><div class="sec">%s</div><div class="h2">%s<span class="n">%s건</span></div>%s</section>'
                 % (esc(TRACKS[track]['label']), esc(c), fmt(len(v)), cat_table('%s-%d' % (tkey, ci), v, track)))
     o.write('</div>')
-    return o.getvalue(), len(recent), head
+    return o.getvalue(), len(recent), rules.comma_nums(head)
 
 
 def main():

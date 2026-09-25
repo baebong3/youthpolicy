@@ -130,3 +130,29 @@ def is_policy(it, local=False):
     """정부 · 국회(중앙) 또는 지자체 행정(지역)이나 제도 · 예산을 다룬 기사"""
     t = it['title']
     return any(w in t for w in GOV) or any(w in t for w in INST) or local and bool(re.search(r'[가-힣]{1,4}(시|도|군|구)(는|가|,|\s)', t))
+
+
+# 제목·헤드라인 속 네 자리 이상 숫자에 천 단위 콤마 (1500명 → 1,500명, 2조1000억 → 2조1,000억)
+#   건너뜀 : 연도(1950~2100, 뒤에 단위가 없을 때 · '년' 앞), 세대 표기(2030 · 1030 · 4050 등),
+#            날짜 · 전화번호 · 코드처럼 숫자 앞뒤에 . - / : 영문이 붙은 경우, 소수
+_NUM = re.compile(r'(?<![\d.,\-/:A-Za-z])(\d{4,})(?![\d,\-/:A-Za-z]|\.\d)')
+_UNIT = re.compile(r'^\s?(명|원|만|억|조|개|건|곳|가구|호|채|세대|시간|여|대|톤|km|㎡|평|배|회|점|편|권|석|쌍|%|천)')
+_GEN = re.compile(r'^([1-6])0([2-7])0$')
+
+
+def comma_nums(text):
+    def rep(m):
+        s = m.group(1)
+        if s.startswith('0'):
+            return s
+        after = text[m.end():]
+        g = _GEN.match(s)
+        if g and int(g.group(2)) > int(g.group(1)) and not re.match(r'^\s?(명|원|만|억|조|개|건|곳|가구|호|%)', after):
+            return s                                   # 2030세대 · 1030 청년정책단
+        n = int(s)
+        if after.startswith('년') or after.startswith('학년'):
+            return s                                   # 2026년 · 2026학년도
+        if 1950 <= n <= 2100 and not _UNIT.match(after):
+            return s                                   # 2026 청년정책 · SOVAC 2026
+        return '{:,}'.format(n)
+    return _NUM.sub(rep, text or '')
