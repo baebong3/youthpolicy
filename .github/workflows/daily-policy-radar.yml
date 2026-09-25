@@ -39,11 +39,15 @@ jobs:
         run: python collect_local_news.py
         continue-on-error: true
 
+      - name: Build issue radar page (index2.html)
+        run: python radar2/build_index2.py
+        continue-on-error: true
+
       - name: Commit refreshed data
         run: |
           git config user.name  "policy-radar-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add daily_news.json news_archive.json local_news.json
+          git add daily_news.json news_archive.json local_news.json index2.html
           git diff --cached --quiet || git commit -m "chore: daily news $(date +%F)"
           git pull --no-rebase --no-edit -X ours origin ${{ github.ref_name }} || true
           git push
