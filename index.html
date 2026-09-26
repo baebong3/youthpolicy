@@ -259,6 +259,7 @@ th.sortable:hover{color:var(--coral-d)}
 .simbadge::before{content:"⚠";font-size:10px}
 .chwrap.simwrap::after{content:"예시 데이터";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);
   font-family:var(--sans);font-size:30px;font-weight:800;color:rgba(224,168,46,.13);letter-spacing:.05em;pointer-events:none;z-index:5;white-space:nowrap}
+.newb{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.3px;color:#fff;background:#E85A3C;border-radius:3px;padding:1px 5px;margin-right:6px;vertical-align:2px}
 </style>
 </head>
 <body>
@@ -645,6 +646,13 @@ function periodData(){
 function fmtMD(d){const p=d.split('-');return `${+p[1]}.${+p[2]}`;}
 function fmtYMD(d){const p=d.split('-');return `${p[0]}.${+p[1]}.${+p[2]}`;}
 
+/* 오늘 자동 수집에서 처음 들어온 기사 (radar2/new_today.json, 매일 갱신) → 피드 제목 앞 NEW */
+let NEWIDS=new Set();
+async function loadNewIds(){
+  try{const r=await fetch('./radar2/new_today.json?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){const j=await r.json(); NEWIDS=new Set([...(j.cen||[]),...(j.loc||[])]);}}catch(e){}
+}
+const newb=i=>NEWIDS.has(i.id)?'<span class="newb">NEW</span>':'';
 async function loadDaily(){
   try{const r=await fetch('./news_archive.json?t='+Date.now(),{cache:'no-store'});
     if(r.ok){const j=await r.json(); if(j&&j.items){ARCHIVE=j; return;}}}catch(e){}
@@ -763,10 +771,10 @@ function renderFeed(){
   const total=its.length, cap=120, shown=its.slice(0,cap);
   $('feedList').innerHTML=shown.map(i=>`<div class="feed-it">
     <div class="feed-s ${i.sentiment}"></div>
-    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${cnum(i.title)}</div>`}
+    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${newb(i)}${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${newb(i)}${cnum(i.title)}</div>`}
       <div class="feed-mt"><span class="schip ${i.sentiment}">${i.sentiment}</span>
         <span class="fld">${i.field}</span><span>${i.dept}</span><span>${i.source}</span><span>${i.date}</span></div></div></div>`).join('')
-    + (total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건 — 기간·분야·감성 필터로 좁혀 보세요</div>`:'')
+    + (total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건 - 기간·분야·감성 필터로 좁혀 보세요</div>`:'')
     || '<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';
 }
 
@@ -1201,7 +1209,7 @@ function renderLFeed(){
   if(lsent)its=its.filter(i=>i.sentiment===lsent);
   const cap=120,total=its.length,shown=its.slice(0,cap);
   $('lfeedList').innerHTML=shown.map(i=>`<div class="feed-it"><div class="feed-s ${i.sentiment}"></div>
-    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${cnum(i.title)}</div>`}
+    <div class="feed-bd">${i.url?`<a class="feed-tt" href="${i.url}" target="_blank" rel="noopener noreferrer">${newb(i)}${cnum(i.title)}<span class="ext">↗</span></a>`:`<div class="feed-tt">${newb(i)}${cnum(i.title)}</div>`}
       <div class="feed-mt"><span class="schip ${i.sentiment}">${i.sentiment}</span><span class="fld">${i.sido}</span><span>${i.source||''}</span><span>${i.date}</span></div></div></div>`).join('')
     +(total>cap?`<div style="text-align:center;color:var(--muted);font-size:11.5px;padding:12px 0">최신 ${cap}건 표시 · 외 ${total-cap}건</div>`:'')
     ||'<div style="color:var(--muted);font-size:12px;padding:12px 0">해당 조건의 뉴스가 없습니다.</div>';
@@ -1257,6 +1265,7 @@ async function init(){
   document.querySelectorAll('#lperiodNav button').forEach(b=>b.onclick=()=>{lperiod=b.dataset.p;document.querySelectorAll('#lperiodNav button').forEach(x=>x.classList.toggle('on',x===b));renderLocalRadar();});
   document.querySelectorAll('#lsentFilter button').forEach(b=>b.onclick=()=>{lsent=b.dataset.s;document.querySelectorAll('#lsentFilter button').forEach(x=>x.classList.toggle('on',x===b));renderLFeed();});
   $('lfoot').innerHTML='출처: 2026년 광역지자체 청년정책 시행계획 17종 · 분야별 총괄표/추진계획 개요 판독 · 합계=분야합 검증(16개), 울산 세부계획 카운트(95/공식 96, *).<br>분야 분류: 청년기본법 5대 영역 기준 통합(참여·기반/관리→참여·권리, 복지·문화→금융·복지·문화). · (주)서던포스트';
+  await loadNewIds();
   await loadDaily();
   await loadLocalNews();
   showMod(1);

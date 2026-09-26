@@ -10,6 +10,7 @@ news_archive.json(중앙) + local_news.json(지역) → index2.html (청년정�
   - 먼저 볼 기사 · 뜨는 주제어 · 지역별(지역) / 기관별(중앙) 보도
   - 6월 이후 월별 흐름(월별 기사 수와 핵심 이슈 3개)
   - 주제별 기사 목록(최근 7일, 10건 + 더보기)
+  - NEW : 매일 실행 때 처음 들어온 기사(radar2/first_seen.json 기준)에 표시, 목록은 radar2/new_today.json
 
 기존 index.html(분석·평가 콘솔)은 건드리지 않음
 
@@ -30,7 +31,10 @@ import region
 from rules import CEN, LOC, TRACKS, KST
 
 OUT = os.path.join(ROOT, 'index2.html')
+SEEN = os.path.join(HERE, 'first_seen.json')      # 기사 id → 처음 수집된 날짜 (매일 실행 때 갱신)
+NEWF = os.path.join(HERE, 'new_today.json')       # 이번 실행에서 처음 들어온 기사 id (index.html도 읽음)
 SHOW = 10
+SEEN_BOOK = {}
 ARCH_FROM = '2026-06'          # 월별 흐름 시작 월
 
 CSS = """<style>
@@ -116,6 +120,7 @@ a{color:inherit;text-decoration:none}
 .chip.neg{background:#FBE7E1;color:#C6452B}
 .chip.pos{background:#E3F2EC;color:#23704F}
 .chip.hot{background:var(--ac);color:#fff}
+.newb{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.3px;color:#fff;background:var(--coral);border-radius:3px;padding:1px 6px;margin-right:6px;vertical-align:2px;white-space:nowrap}
 .meta{font-size:12px;color:var(--muted);margin-top:6px}
 .meta b{color:var(--sub);font-weight:600}
 
@@ -300,6 +305,10 @@ def link(r, text=None):
     return '<a href="%s" target="_blank" rel="noopener">%s</a>' % (esc(r['url']), esc(rules.comma_nums(text or r['title'])))
 
 
+def newb(r):
+    return '<span class="newb">NEW</span>' if r.get('new') else ''
+
+
 def schip(r):
     s = r.get('sentiment')
     if s == '부정':
@@ -339,8 +348,18 @@ def policy_first(sts, track, k):
     return ([s for s in sts if s[0] and pol(s)] + [s for s in sts if s[0] and not pol(s)])[:k]
 
 
+def mark_new(items_raw, track, seen, today_s):
+    """처음 보는 id에 오늘 날짜를 기록하고, 오늘 처음 들어온 id 집합을 돌려줌"""
+    book = seen.setdefault(track, {})
+    for it in items_raw:
+        if it.get('id') and it['id'] not in book:
+            book[it['id']] = today_s
+    return {i for i, d in book.items() if d == today_s}
+
+
 def load(track, today_s):
     d = json.load(open(os.path.join(ROOT, TRACKS[track]['file']), encoding='utf-8'))
+    new_ids = mark_new(d.get('items', []), track, SEEN_BOOK, today_s)
     items, seen = [], set()
     for it in sorted(d.get('items', []), key=lambda x: x['date'], reverse=True):
         if not it.get('title') or not it.get('date'):
@@ -354,6 +373,7 @@ def load(track, today_s):
         r['score'] = rules.score_item(r, today_s)
         r['cat'] = rules.category(r['title'])
         r['src'] = r.get('url')
+        r['new'] = r.get('id') in new_ids
         items.append(r)
     return items
 
@@ -459,7 +479,7 @@ def region_card(items, ac_hex):
     for sd, v in top:
         r = sorted(v, key=lambda x: (-x['score'], x['date']))[0]
         li += ('<li><div class="rn">%s<small>%s건</small></div><div><div class="tt">%s</div>'
-               '<div class="meta">%s · %s</div></div></li>' % (sd, fmt(len(v)), link(r), dt(r['date']), esc(r['cat'])))
+               '<div class="meta">%s · %s</div></div></li>' % (sd, fmt(len(v)), newb(r) + link(r), dt(r['date']), esc(r['cat'])))
     return svg, '<ol class="rlist">%s</ol>' % li
 
 
@@ -474,7 +494,7 @@ def agency_card(items):
     for a, v in rows[:6]:
         r = sorted(v, key=lambda x: (-x['score'], x['date']))[0]
         li += ('<li><div class="rn">%s<small>%s건</small></div><div><div class="tt">%s</div>'
-               '<div class="meta">%s · %s</div></div></li>' % (esc(a), fmt(len(v)), link(r), dt(r['date']), esc(r['cat'])))
+               '<div class="meta">%s · %s</div></div></li>' % (esc(a), fmt(len(v)), newb(r) + link(r), dt(r['date']), esc(r['cat'])))
     n_hit = sum(1 for it in items if rules.agencies(it['title']))
     return bars, '<ol class="rlist">%s</ol>' % li, n_hit
 
@@ -490,7 +510,7 @@ def cat_table(key, rows, track):
                  '<td class="c" data-k="%s">%s</td></tr>'
                  % (' class="ex"' if i >= SHOW else '', r['date'], r['date'][5:].replace('-', '.'),
                     esc(where(r, track)), esc(r['title']),
-                    link(r) + ('<span class="same">같은 사안 %s건 더</span>' % fmt(dup[id(r)]) if dup.get(id(r)) else ''),
+                    newb(r) + link(r) + ('<span class="same">같은 사안 %s건 더</span>' % fmt(dup[id(r)]) if dup.get(id(r)) else ''),
                     s, schip(r) or '<span class="meta">중립</span>'))
     rest = len(ordered) - SHOW
     o = '<input class="more" type="checkbox" id="more-%s">' % key if rest > 0 else ''
@@ -567,7 +587,7 @@ def pane(items, track, days, today):
         by_cat.setdefault(r['cat'], []).append(r)
     cat_order = sorted(by_cat, key=lambda c: (c == '기타', -len(by_cat[c])))
     top_cat = cat_order[0] if cat_order else None
-    n_today = sum(1 for r in items if r['date'] == today_s)
+    new_rel = [r for r in rel_all if r.get('new')]
     n_since_jun = sum(1 for r in items if r['date'][:7] >= ARCH_FROM)
     neg7 = sum(1 for r in recent if r.get('sentiment') == '부정')
 
@@ -587,7 +607,7 @@ def pane(items, track, days, today):
 
     # 2) KPI
     kp = [(fmt(len(recent)), '', '최근 %d일 기사' % days, '청년정책 관련 · 중복 제외'),
-          (fmt(n_today), '', '오늘 보도', dt(today_s) + ' 기준'),
+          (fmt(len(new_rel)), '', '오늘 새로 수집', '%s 자동 수집분 · NEW 표시' % dt(today_s)),
           (fmt(n_since_jun), '', '6월 이후 누적', ('수집 전체 %s건' % fmt(len(items))) if len(items) > n_since_jun
            else '%s 수집 시작' % dt(min(r['date'] for r in items))),
           (fmt(neg7), 'neg', '부정 보도', '최근 %d일 · 비중 %.1f%%' % (days, neg7 / max(len(recent), 1) * 100)),
@@ -611,6 +631,13 @@ def pane(items, track, days, today):
             '<div class="cap">보도일 기준 · 단위 : 건 · 마지막 막대가 오늘</div>%s</section>' % daily_chart(rel_all, today, ac))
     o.write('</div></div>')
 
+    # 3-1) 오늘 새로 들어온 기사
+    o.write('<section class="card g2"><div class="sec">NEW</div><div class="h2">오늘 새로 들어온 기사<span class="n">%s건</span></div>'
+            '<div class="cap">%s 자동 수집에서 처음 들어온 청년정책 기사 · 관련도순 · 같은 사안은 대표 기사 한 건만 앞에</div>%s</section>'
+            % (fmt(len(new_rel)), dt(today_s),
+               cat_table(tkey + '-new', sorted(new_rel, key=lambda x: (-x['score'], x['date'])), track)
+               if new_rel else '<p class="note">오늘 자동 수집 전이거나 새로 들어온 기사가 없음 · 매일 오전 자동 수집 후 채워짐</p>'))
+
     # 4) 주제별 핵심 정리
     o.write('<div class="shead">주제별 핵심 정리<small>최근 %d일 · 주제마다 가장 크게 다뤄진 이슈와 먼저 볼 기사 3건</small></div>' % days)
     o.write('<div class="tgrid">')
@@ -622,7 +649,7 @@ def pane(items, track, days, today):
         used = {id(a) for a in st[0][1]} if st else set()
         arts = [g[0] for g in group_same(sorted(v, key=lambda x: (-x['score'], x['date']))) if id(g[0]) not in used]
         li = ''.join('<li>%s<div class="meta">%s%s %s</div></li>'
-                     % (link(r), dt(r['date']), (' · ' + esc(where(r, track))) if where(r, track) != '-' else '', schip(r))
+                     % (newb(r) + link(r), dt(r['date']), (' · ' + esc(where(r, track))) if where(r, track) != '-' else '', schip(r))
                      for r in arts[:3])
         o.write('<section class="tcard"><div class="th"><span class="tn">%s</span><span class="tc">%s건 <small>부정 %s건</small></span></div>%s<ul>%s</ul></section>'
                 % (esc(c), fmt(len(v)), fmt(neg), tk, li))
@@ -640,10 +667,10 @@ def pane(items, track, days, today):
             chips += ' <span class="chip hot">주목</span>'
         wh = lambda r: (' · <b>%s</b>' % esc(where(r, track))) if where(r, track) != '-' else ''
         o.write('<div class="lead">%s<div class="tt">%s</div><div class="meta">%s%s · 점수 %s</div></div><ol class="rest">'
-                % (chips, link(r), dt(r['date']), wh(r), fmt(r['score'])))
+                % (chips, newb(r) + link(r), dt(r['date']), wh(r), fmt(r['score'])))
         for i, r in enumerate(tops[1:], 2):
             o.write('<li><span class="rk">%d</span><div><div class="tt">%s</div><div class="meta">%s%s · %s · 점수 %s %s</div></div></li>'
-                    % (i, link(r), dt(r['date']), wh(r), esc(r['cat']), fmt(r['score']), schip(r)))
+                    % (i, newb(r) + link(r), dt(r['date']), wh(r), esc(r['cat']), fmt(r['score']), schip(r)))
         o.write('</ol>')
     else:
         o.write('<p class="note">해당 기간 기사 없음</p>')
@@ -688,8 +715,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--days', type=int, default=7)
     a = ap.parse_args()
+    global SEEN_BOOK
     now = datetime.now(KST)
     today = now.date()
+    try:
+        SEEN_BOOK = json.load(open(SEEN, encoding='utf-8'))
+    except Exception:
+        SEEN_BOOK = {}
     cen = load(CEN, today.isoformat())
     loc = load(LOC, today.isoformat())
     cen_html, n_cen, cen_head = pane(cen, CEN, a.days, today)
@@ -714,9 +746,14 @@ def main():
     o.write('<footer class="foot"><span><b>(주)서던포스트</b> · 청년정책 이슈 레이더 · 중앙(과제 매칭 뉴스) · 지역(17개 시도 청년정책 뉴스)</span>'
             '<span>네이버 뉴스 검색 API · 감성은 자동 분류 · 점수는 편집 판단을 돕는 보조 지표임</span></footer>')
     o.write('</div>' + SORT_JS + '</body></html>')
+    json.dump(SEEN_BOOK, open(SEEN, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'), sort_keys=True)
+    json.dump({'date': today.isoformat(),
+               'cen': sorted(r['id'] for r in cen if r.get('new')), 'loc': sorted(r['id'] for r in loc if r.get('new'))},
+              open(NEWF, 'w', encoding='utf-8'), ensure_ascii=False)
     out = o.getvalue().replace('—', '-').replace('–', '-')
     open(OUT, 'w', encoding='utf-8').write(out)
-    print('생성 : %s (%s bytes · 중앙 %d건 · 지역 %d건)' % (OUT, fmt(len(out.encode('utf-8'))), n_cen, n_loc))
+    print('생성 : %s (%s bytes · 중앙 %d건 · 지역 %d건 · 오늘 신규 중앙 %d건 · 지역 %d건)' % (OUT, fmt(len(out.encode('utf-8'))), n_cen, n_loc,
+          sum(1 for r in cen if r.get('new')), sum(1 for r in loc if r.get('new'))))
     print('  헤드라인 : 중앙 「%s」 / 지역 「%s」' % (cen_head, loc_head))
 
 
