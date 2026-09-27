@@ -90,9 +90,10 @@ a{color:inherit;text-decoration:none}
 .dek{font-size:14px;color:var(--sub);margin:0;word-break:keep-all}
 .dek a{color:var(--ink);font-weight:600;border-bottom:1px solid var(--rule)}
 .dek a:hover{color:var(--ac-d);border-color:var(--ac)}
-.also{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-.also li{font-size:13px;background:#fff;border:1px solid var(--rule);border-radius:999px;padding:5px 12px;word-break:keep-all}
-.also li b{color:var(--ac-d);font-weight:800;margin-right:4px}
+.also{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;white-space:nowrap}
+.also .al{font-size:13px;font-weight:800;color:var(--ac-d);flex:none}
+.also li{font-size:13px;background:#fff;border:1px solid var(--rule);border-radius:999px;padding:5px 12px;white-space:nowrap;min-width:0}
+.also li .meta{margin:0 0 0 4px;display:inline}
 
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border:1px solid var(--rule);border-top:3px solid var(--ac);margin-bottom:22px}
@@ -260,6 +261,7 @@ table.ttab{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px
   .mast .upd{margin-left:0;text-align:left;width:100%}
   .card{padding:16px}.lead .tt{font-size:18px}
   .tabs{display:flex}.tabs label{flex:1;justify-content:center;padding:9px 10px}
+  .also{flex-wrap:wrap}
   .hb .r{grid-template-columns:88px 1fr}
 }
 @media print{.pane{display:block!important}.tabs,.mbtn{display:none}.ttab tr.ex{display:table-row}}
@@ -538,7 +540,7 @@ def headline(items, track, today):
                and sum(rules.is_policy(a, track == LOC) for a in s[1]) >= 0.3 * len(s[1])]
         if pol:
             top = pol[0]
-            rest = policy_first([s for s in sts if s is not top], track, 3)
+            rest = policy_first([s for s in sts if s is not top], track, 2)
             return top[0], top[1], '최근 %d일 관련 기사 %s건' % (days, fmt(len(top[1]))), rest
     pool = sorted([r for r in items if r['date'] >= since(today, 7) and rules.relevant(r)], key=lambda x: (-x['score'], x['date']))
     if pool:
@@ -601,8 +603,10 @@ def pane(items, track, days, today):
     o.write('<section class="hero"><div class="eyebrow">%s 오늘의 핵심 이슈 · %s</div><h1>%s</h1><p class="dek">%s%s</p>'
             % (esc(TRACKS[track]['label']), dt(today_s), esc(rules.comma_nums(head)), basis, rep))
     if others:
-        o.write('<ul class="also">' + ''.join('<li><b>함께 본 이슈</b>%s <span class="meta">%s건</span></li>'
-                                               % (link(a[0], h), fmt(len(a))) for h, a, _ in others if h) + '</ul>')
+        # 함께 본 이슈 2개를 한 줄에 : 제목은 낱말 단위로 26자 안에서 끊음(말줄임 없음)
+        o.write('<ul class="also"><span class="al">함께 본 이슈</span>' + ''.join(
+            '<li>%s<span class="meta">%s건</span></li>' % (link(a[0], topic._fit(h, 26).rstrip(' ,·')), fmt(len(a)))
+            for h, a, _ in others[:2] if h) + '</ul>')
     o.write('</section>')
 
     # 2) KPI
