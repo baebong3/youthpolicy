@@ -193,6 +193,13 @@ table.kw{width:100%;border-collapse:collapse;font-size:13.5px}
 .reg svg .tn{font-size:13px;font-weight:800;text-anchor:middle;font-family:'PretendardSub','Pretendard',sans-serif}
 .reg svg .tv{font-size:15px;font-weight:800;text-anchor:middle;font-variant-numeric:tabular-nums;font-family:'PretendardSub','Pretendard',sans-serif}
 .rlist{list-style:none;margin:0;padding:0}
+.reg.ag{align-items:stretch;grid-template-columns:minmax(0,420px) 1fr}
+.reg.ag .agl{display:flex;min-height:100%}
+.hb.fill{flex:1;display:flex;flex-direction:column;justify-content:space-between;margin:0;padding:6px 0}
+.hb.fill .r{flex:1;margin:0;grid-template-columns:128px 1fr}
+.hb.fill .nm{font-size:var(--fs)}
+.hb.fill .v{font-size:calc(var(--fs) + .5px)}
+.hb.fill .b{height:var(--bh)}
 .rlist li{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule2)}
 .rlist li:last-child{border-bottom:0}
 .rlist .rn{font-weight:800;font-size:14px;word-break:keep-all}
@@ -249,7 +256,7 @@ table.ttab{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px
 .foot{margin:34px 0 0;padding:18px 0 40px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 .foot b{color:var(--sub)}
 
-@media(max-width:980px){.grid{grid-template-columns:1fr}.reg{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.reg,.reg.ag{grid-template-columns:1fr}.hb.fill .r{min-height:30px}.kpis{grid-template-columns:repeat(3,1fr)}
   .kpi:nth-child(4){border-left:0}.kpi:nth-child(n+4){border-top:1px solid var(--rule2)}}
 @media(max-width:720px){.tgrid{grid-template-columns:1fr}}
 @media(max-width:640px){
@@ -491,7 +498,12 @@ def agency_card(items):
         for a in rules.agencies(it['title']):
             by.setdefault(a, []).append(it)
     rows = sorted(by.items(), key=lambda kv: -len(kv[1]))
-    bars = hbars([(a, len(v), '') for a, v in rows[:10]], rows[0][0] if rows else None)
+    # 기관 전부 표시 · 오른쪽 목록 높이에 맞춰 막대를 세로로 꽉 채움 · 기관이 많으면 글자 · 막대를 줄임
+    n = len(rows)
+    fs = 13 if n <= 8 else 12.5 if n <= 11 else 11.5 if n <= 14 else 10.5
+    bh = 18 if n <= 8 else 16 if n <= 11 else 13 if n <= 14 else 11
+    bars = hbars([(a, len(v), '') for a, v in rows], rows[0][0] if rows else None)
+    bars = bars.replace('<div class="hb">', '<div class="hb fill" style="--fs:%.1fpx;--bh:%dpx">' % (fs, bh), 1)
     li = ''
     for a, v in rows[:6]:
         r = sorted(v, key=lambda x: (-x['score'], x['date']))[0]
@@ -695,7 +707,7 @@ def pane(items, track, days, today):
         bars, rl, n_hit = agency_card(recent)
         o.write('<section class="card g2"><div class="sec">AGENCY</div><div class="h2">기관별 보도</div>'
                 '<div class="cap">최근 %d일 · 제목에 기관명이 나온 기사 %s건 · 오른쪽은 기관별 대표 기사 · 단위 : 건</div>'
-                '<div class="reg"><div>%s</div><div>%s</div></div></section>' % (days, fmt(n_hit), bars, rl))
+                '<div class="reg ag"><div class="agl">%s</div><div>%s</div></div></section>' % (days, fmt(n_hit), bars, rl))
 
     # 7) 월별 흐름
     tb, cap_early = archive(items, track, today)
