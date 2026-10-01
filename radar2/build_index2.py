@@ -57,7 +57,9 @@ a{color:inherit;text-decoration:none}
 .mast{background:#fff;border-bottom:1px solid var(--rule)}
 .mast .in{max-width:1240px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px}
-.brand .mk{width:12px;height:12px;border-radius:3px;background:var(--coral)}
+.brand{gap:14px}
+.brand .logo{height:30px;width:auto;display:block}
+.brand .sep{width:1px;height:32px;background:var(--rule)}
 .team{display:flex;flex-direction:column;line-height:1.25}
 .team .t1{font-size:12px;font-weight:600;color:var(--muted)}
 .team .t2{font-size:17px;font-weight:800;letter-spacing:-.4px}
@@ -266,6 +268,7 @@ table.ttab{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px
   .kpi:nth-child(even){border-left:1px solid var(--rule2)!important}
   .kpi:last-child{grid-column:1/-1}
   .mast .upd{margin-left:0;text-align:left;width:100%}
+  .brand{gap:10px}.brand .logo{height:24px}.brand .sep{height:26px}.team .t2{font-size:16px}
   .card{padding:16px}.lead .tt{font-size:18px}
   .tabs{display:flex}.tabs label{flex:1;justify-content:center;padding:9px 10px}
   .also{flex-wrap:wrap}
@@ -750,8 +753,9 @@ def main():
             '<link rel="preload" href="assets/fonts/pretendard-sub-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>')
     o.write(CSS + '</head><body>')
     o.write('<input class="trk" type="radio" name="trk" id="trk-cen" checked><input class="trk" type="radio" name="trk" id="trk-loc">')
-    o.write('<header class="mast"><div class="in"><div class="brand"><span class="mk"></span>'
-            '<div class="team"><span class="t1">(주)서던포스트 · 2026 중앙행정기관 청년정책 분석·평가</span>'
+    o.write('<header class="mast"><div class="in"><div class="brand">'
+            '<img class="logo" src="assets/brand/southernpost_ko.png" alt="(주)서던포스트" width="134" height="30"><span class="sep"></span>'
+            '<div class="team"><span class="t1">2026 중앙행정기관 청년정책 분석·평가</span>'
             '<span class="t2">청년정책 이슈 레이더</span></div></div>'
             '<div class="upd"><b>%s 업데이트</b>매일 08:00 자동 수집 · <a href="index.html">분석·평가 콘솔로</a></div>'
             '</div><div class="ribbon"><i></i><i></i></div></header>' % now.strftime('%Y.%m.%d %H:%M'))
