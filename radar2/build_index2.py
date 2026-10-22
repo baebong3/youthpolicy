@@ -28,6 +28,7 @@ sys.path.insert(0, HERE)
 import rules
 import topic
 import region
+import briefs
 from rules import CEN, LOC, TRACKS, KST
 
 OUT = os.path.join(ROOT, 'index2.html')
@@ -757,12 +758,13 @@ def main():
             '<img class="logo" src="assets/brand/southernpost_ko.png" alt="(주)서던포스트" width="134" height="30"><span class="sep"></span>'
             '<div class="team"><span class="t1">2026 중앙행정기관 청년정책 분석·평가</span>'
             '<span class="t2">청년정책 이슈 레이더</span></div></div>'
-            '<div class="upd"><b>%s 업데이트</b>매일 08:00 자동 수집 · <a href="index.html">분석·평가 콘솔로</a></div>'
+            '<div class="upd"><b>%s 업데이트</b>매일 08:00 자동 수집 · <a href="#briefs">일일 브리핑 PDF</a> · <a href="index.html">분석·평가 콘솔로</a></div>'
             '</div><div class="ribbon"><i></i><i></i></div></header>' % now.strftime('%Y.%m.%d %H:%M'))
     o.write('<div class="wrap">')
     o.write('<div class="tabs"><label for="trk-cen">중앙정부 <small>최근 %d일 %s건</small></label>'
             '<label for="trk-loc">지역정부 <small>최근 %d일 %s건</small></label></div>' % (a.days, fmt(n_cen), a.days, fmt(n_loc)))
     o.write('<div class="pane pane-cen">%s</div><div class="pane pane-loc">%s</div>' % (cen_html, loc_html))
+    o.write(briefs.block(briefs.load()))
     o.write('<footer class="foot"><span><b>(주)서던포스트</b> · 청년정책 이슈 레이더 · 중앙(과제 매칭 뉴스) · 지역(17개 시도 청년정책 뉴스)</span>'
             '<span>네이버 뉴스 검색 API · 감성은 자동 분류 · 점수는 편집 판단을 돕는 보조 지표임</span></footer>')
     o.write('</div>' + SORT_JS + '</body></html>')
