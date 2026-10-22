@@ -82,9 +82,9 @@ CSS = """<style>
 .bf .bs .dl{color:#C6452B}
 .bf .bl{display:flex;gap:6px;white-space:nowrap}
 .bf .bl a{font-size:12.5px;font-weight:700;border-radius:999px;padding:6px 12px;border:1px solid var(--rule)}
-.bf .bl a.bdn{background:#2B3A55;border-color:#2B3A55;color:#fff}
+.bf .bl a.bdn{background:#152484;border-color:#152484;color:#fff}
 .bf .bl a.bdn small{font-weight:600;opacity:.8}
-.bf .bl a.bv:hover{border-color:#2B3A55}
+.bf .bl a.bv:hover{border-color:#152484}
 .bempty{font-size:13px;color:var(--muted);padding:12px 0;border-top:1px solid var(--rule2)}
 @media(max-width:720px){.bf{grid-template-columns:1fr}.bf .bl{margin-top:2px}}
 </style>"""
@@ -103,7 +103,7 @@ def block(rows):
 
 
 def page(rows):
-    root_css = (':root{--navy:#2B3A55;--coral:#E85A3C;--ink:#16202C;--sub:#4A5463;--muted:#8A93A0;--rule:#E3E7ED;--rule2:#F0F2F5;--bg:#F6F7F9}'
+    root_css = (':root{--navy:#152484;--coral:#E85A3C;--ink:#16202C;--sub:#4A5463;--muted:#8A93A0;--rule:#E3E7ED;--rule2:#F0F2F5;--bg:#F6F7F9}'
                 '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:14px;line-height:1.55}'
                 'a{color:inherit;text-decoration:none}.mast{background:#fff;border-bottom:1px solid var(--rule)}'
                 '.mast .in{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}'

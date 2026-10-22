@@ -43,7 +43,7 @@ CSS = """<style>
 @font-face{font-family:'PretendardSub';font-weight:600;font-display:swap;src:url(assets/fonts/pretendard-sub-SemiBold.woff2) format('woff2')}
 @font-face{font-family:'PretendardSub';font-weight:800;font-display:swap;src:url(assets/fonts/pretendard-sub-ExtraBold.woff2) format('woff2')}
 :root{
-  --navy:#2B3A55;--navy-d:#1C2740;--navy-s:#E7EAF0;--coral:#E85A3C;--coral-d:#C6452B;--coral-s:#FBE7E1;
+  --navy:#152484;--navy-d:#0D1A5E;--navy-s:#E6E9F7;--coral:#E85A3C;--coral-d:#C6452B;--coral-s:#FBE7E1;
   --good:#2E8B6F;--ink:#16202C;--sub:#4A5463;--muted:#8A93A0;
   --rule:#E3E7ED;--rule2:#F0F2F5;--bg:#F6F7F9;--card:#FFFFFF;--bar:#D5DAE1;
 }
@@ -596,7 +596,7 @@ def archive(items, track, today):
 def pane(items, track, days, today):
     today_s = today.isoformat()
     tkey = 'cen' if track == CEN else 'loc'
-    ac = '#2B3A55' if track == CEN else '#E85A3C'
+    ac = '#152484' if track == CEN else '#E85A3C'
     rel_all = [r for r in items if rules.relevant(r)]
     recent = [r for r in rel_all if r['date'] >= since(today, days)]
     prev = [r for r in rel_all if since(today, 2 * days) <= r['date'] < since(today, days)]
