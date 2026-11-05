@@ -1,0 +1,8 @@
+topic,rep_keywords,field,field_id,note
+일자리,취업·채용·구직·인턴·일경험·고용·면접·직무,일자리,F1,collect_local_news.py TOPICS['일자리']
+창업,창업·스타트업·벤처·로컬창업·청년몰·청년상인,일자리,F1,collect_local_news.py TOPICS['창업'] → 일자리로 환산(제안서 3.4.1)
+주거,주거·월세·전세·임대주택·보증금·기숙사·주거급여,주거,F3,collect_local_news.py TOPICS['주거']
+교육·직업훈련,직업훈련·역량강화·장학·부트캠프·아카데미·교육과정,교육·직업훈련,F2,collect_local_news.py TOPICS['교육·직업훈련']
+복지·금융,청년수당·자산형성·바우처·마음건강·고립·은둔·니트,금융·복지·문화,F4,collect_local_news.py TOPICS['복지·금융'] → 금융·복지·문화로 환산
+참여·소통,참여기구·청년위원·거버넌스·청년의회·원탁회의,참여·권리,F5,collect_local_news.py TOPICS['참여·소통']
+정책·기반,청년정책·시행계획·조례·청년센터·청년공간·청년친화,공통,ALL,전 분야 기반(특정 분야 미할당)·제안서 3.4.1
